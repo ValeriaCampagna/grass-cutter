@@ -75,8 +75,24 @@ class RobotController:
 
     def update(self):
         self.update_sensor_readings()
-        # print(self.current_state.__name__)
+        self._controller_input()
         self.current_state(self)
+
+    def _controller_input(self):
+        for event in pygame.event.get():
+            # R1: 5, R2: 7
+            # L1: 4, L2: 6
+            if event.type not in [JOYBUTTONDOWN]:
+                continue
+            button = event.button
+            if button in [5, 7]:
+                change = +2 if button == 5 else -2
+                print(f"Right Motor Speed: {self.RIGHT_CRUISE_SPEED} -> {self.RIGHT_CRUISE_SPEED + change}")
+                self.RIGHT_CRUISE_SPEED += change
+            elif button in [4, 6]:
+                change = +2 if button == 4 else -2
+                print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
+                self.LEFT_CRUISE_SPEED += change
 
     def change_state(self, new_state):
         state_name = new_state.__name__
@@ -104,10 +120,10 @@ class RobotController:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
                 # print("Turning Right")
-                self.send_speed(self.TURNING_SPEED+4, 0)
+                self.send_speed(self.LEFT_CRUISE_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
                 # print("Turning Left")
-                self.send_speed(0, self.TURNING_SPEED+4)
+                self.send_speed(0, self.RIGHT_CRUISE_SPEED)
         else:
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
         return deviation
@@ -324,6 +340,7 @@ def turn_state(controller: RobotController):
         elif controller.homing:
             controller.change_state(homing_state)
         else:
+            logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
 
@@ -332,7 +349,7 @@ def boost_state(controller: RobotController):
     if controller.get_tracked_distance() > 10:
         controller.change_state(cruise_state)
         return
-    controller.send_speed(80, 76)
+    controller.send_speed(controller.LEFT_CRUISE_SPEED + 15, controller.RIGHT_CRUISE_SPEED + 15)
 
 
 def end_state(controller: RobotController):
