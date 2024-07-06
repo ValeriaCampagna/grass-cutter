@@ -236,7 +236,7 @@ def homing_state(controller: RobotController):
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
-    if len(controller.state_history) > 4 and "homing_state" in controller.state_history:
+    if controller.angle_delta == 0 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
 
