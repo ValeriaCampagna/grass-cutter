@@ -75,7 +75,8 @@ class RobotController:
 
     def update(self):
         self.update_sensor_readings()
-        self._controller_input()
+        if self.current_state.__name__ != "map_state":
+            self._controller_input()
         self.current_state(self)
 
     def _controller_input(self):
@@ -252,7 +253,7 @@ def homing_state(controller: RobotController):
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
-    if controller.angle_delta == 0 and controller.state_history[4] == "homing_state":
+    if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
 
