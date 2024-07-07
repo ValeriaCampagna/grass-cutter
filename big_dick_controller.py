@@ -215,8 +215,8 @@ class RobotController:
             "left_encoder_raw": float(left_encoder),
             "left_ultrasound": 0,
             "right_ultrasound": 0,
-            "front_1_ultrasound": 0,
-            "front_2_ultrasound": 0,
+            "front_ultrasound_1": 0,
+            "front_ultrasound_2": 0,
             "right_encoder": float(right_encoder)
         }
 
