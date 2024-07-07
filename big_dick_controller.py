@@ -25,6 +25,7 @@ print(f"Joystick Name: {joystick.get_name()}")
 print(f"Number of Axes: {joystick.get_numaxes()}")
 print(f"Number of Buttons: {joystick.get_numbuttons()}")
 
+
 class ObstacleDetectionRoutine:
     def __init__(self, target_angle: int, remaining_turns: int):
         self.current_stage = self._stage_1
@@ -34,8 +35,7 @@ class ObstacleDetectionRoutine:
         self.ticks_obstacle_length = 0
         self.ultrasound_sequence = []
         self.done = False
-        # TODO: This might need to be more than 1 lane is the robot is much longer
-        #  than broad
+        # TODO: This might need to be more than 1 lane since the robot is soo long
         if remaining_turns > 1:
             # if target angle is 0 turn direction is -1 so turn right
             # else turn left
@@ -78,7 +78,7 @@ class ObstacleDetectionRoutine:
 
     def _stage_2(self, controller: 'RobotController'):
         # decide which ultrasound to use
-        ultrasound = controller.sensor_data["left_ultra_sound"] \
+        ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound):
             self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
@@ -97,7 +97,7 @@ class ObstacleDetectionRoutine:
 
     def _stage_4(self, controller: 'RobotController'):
         if controller.sensor_data["left_encoder"] >= self.ticks_after_clearing_obstacle:
-            controller.total_ticks = controller.ticks_before_avoiding_obstacle - controller.ticks_obstacle_length
+            controller.total_ticks = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
             controller.target_angle += self.direction * 90
             self.turning = True
             self.done = True
@@ -139,16 +139,10 @@ class RobotController:
         self.homing = False
         self.mapping = False
 
-        self.obstacle_stage = 0
-        self.ticks_before_avoiding_obstacle = None
-        self.ticks_after_clearing_obstacle = None
-        self.ticks_obstacle_length = None
-
     def update(self):
         self.update_sensor_readings()
-        if self.current_state.__name__ != "map_state":
-            self._controller_input()
         self.current_state(self)
+        self._controller_input()
 
     def _controller_input(self):
         for event in pygame.event.get():
@@ -167,7 +161,7 @@ class RobotController:
                 self.LEFT_CRUISE_SPEED += change
 
     def change_state(self, new_state):
-        state_name = new_state.__name__
+        state_name = new_state.__name__ if hasattr(new_state, "__name__") else type(new_state).__name__
         print("NEW STATE: ", state_name)
         logging.info(f"NEW STATE: {state_name}")
         self.state_history.append(state_name)
@@ -219,7 +213,8 @@ class RobotController:
             "angle": round(float(angle) - self.angle_delta),
             "left_encoder": float(left_encoder) - self.total_ticks,
             "left_encoder_raw": float(left_encoder),
-            "rear_ultrasound": 0,
+            "left_ultrasound": 0,
+            "right_ultrasound": 0,
             "front_1_ultrasound": 0,
             "front_2_ultrasound": 0,
             "right_encoder": float(right_encoder)
@@ -336,11 +331,14 @@ def homing_state(controller: RobotController):
             controller.homing_turns += 1
             controller.reset_encoders()
             controller.homing = False
+            # This is to off-set the last turn we take before going into cruise mode
+            controller.number_of_turns = -1
             controller.change_state(turn_state)
 
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
+    # TODO: THIS shit might not be good at detecting whether we mapped or just start cutting
     if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
@@ -349,8 +347,7 @@ def cruise_state(controller: RobotController):
     if (distance := controller.get_tracked_distance()) >= controller.workspace_height:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
-        # controller.required_turns
-        if controller.required_turns <= (controller.number_of_turns - 1):
+        if controller.required_turns <= controller.number_of_turns:
             if distance >= (controller.workspace_height + 45):
                 controller.change_state(end_state)
                 return
@@ -367,55 +364,10 @@ def cruise_state(controller: RobotController):
         controller.change_state(turn_state)
     # Obstacle detection
     elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
-        controller.change_state(ObstacleDetectionRoutine(controller.target_angle, controller.required_turns - controller.number_of_turns))
+        turns_left = controller.required_turns - controller.number_of_turns
+        controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
         controller.forward()
-
-
-def obstacle_state(controller: RobotController):
-    if controller.obstacle_stage == 0:
-        controller.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
-        # TODO: We must figure out which direction we must turn. Left or right.
-        controller.target_angle += - 90
-        controller.obstacle_stage += 1
-        controller.change_state(axis_turn_state)
-        return
-    elif controller.obstacle_stage == 1:
-        controller.forward()
-        # TODO: This needs to check if the rear ultrasound is 0 just after turning.
-        #  If it must we must advance until it's value is 1 and then 0
-        if controller.sensor_data["rear_ultrasound"] == 0:
-            controller.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
-            controller.target_angle += 90
-            controller.obstacle_stage += 1
-            controller.change_state(axis_turn_state)
-            return
-    elif controller.obstacle_stage == 2:
-        # TODO: This needs to check if the rear ultrasound is 0 just after turning.
-        #  If it must we must advance until it's value is 1 and then 0
-        if controller.sensor_data["rear_ultrasound"] == 0:
-            controller.ticks_obstacle_length = controller.sensor_data["left_encoder"]
-            controller.target_angle += 90
-            controller.obstacle_stage += 1
-            controller.change_state(axis_turn_state)
-            return
-    elif controller.obstacle_stage == 3:
-        if controller.sensor_data["left_encoder"] >= controller.ticks_after_clearing_obstacle:
-            controller.total_ticks = controller.ticks_before_avoiding_obstacle - controller.ticks_obstacle_length
-            controller.target_angle += -90
-            controller.obstacle_stage += 1
-            controller.change_state(axis_turn_state)
-            return
-    elif controller.obstacle_stage == 4:
-        controller.change_state(cruise_state)
-    controller.forward()
-
-
-def axis_turn_state(controller: RobotController):
-    deviation = controller.axis_turn()
-    if deviation <= controller.angle_error_margin:
-        controller.reset_encoders()
-        controller.change_state(obstacle_state)
 
 
 def turn_state(controller: RobotController):
@@ -445,7 +397,7 @@ def boost_state(controller: RobotController):
 def end_state(controller: RobotController):
     controller.halt()
     print("########Done########")
-    print("Total width covered:", controller.number_of_turns * 35)
+    print("Total width covered:", controller.number_of_turns * controller.WHEEL_RADIUS)
     exit(0)
 
 
