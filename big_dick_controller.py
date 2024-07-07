@@ -35,6 +35,67 @@ if os.path.isfile(dimensions_file):
         f.close()
 
 
+class ObstacleDetectionRoutine:
+    def __init__(self, target_angle: int, remaining_turns: int):
+        self.current_stage = self._stage_1
+        self.turning = False
+        self.ticks_before_avoiding_obstacle = 0
+        self.ticks_after_clearing_obstacle = 0
+        self.ticks_obstacle_length = 0
+        self.done = False
+
+        if remaining_turns > 1:
+            # if target angle is 0 turn direction is -1 so turn right
+            # else turn left
+            self.direction = int(target_angle != 0)
+        else:
+            # if less 1 or not turns remain we must turn in the opposite direction
+            self.direction = int(target_angle == 0)
+
+    def __call__(self, controller: 'RobotController'):
+        if self.turning:
+            self.axis_turn()
+        else:
+            self.current_stage(controller)
+            controller.forward()
+
+    def axis_turn(self):
+        pass
+
+    def _stage_1(self, controller: 'RobotController'):
+        self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
+        controller.target_angle += self.direction * 90
+        self.current_stage = self._stage_2
+        self.turning = True
+
+    def _stage_2(self, controller: 'RobotController'):
+        controller.forward()
+        # TODO: This needs to check if the rear ultrasound is 0 just after turning.
+        #  If it must we must advance until it's value is 1 and then 0
+        if controller.sensor_data["rear_ultrasound"] == 0:
+            self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
+            controller.target_angle += -self.direction * 90
+            self.current_stage = self._stage_3
+            self.turning = True
+
+    def _stage_3(self, controller: 'RobotController'):
+        # TODO: This needs to check if the rear ultrasound is 0 just after turning.
+        #  If it must we must advance until it's value is 1 and then 0
+        if controller.sensor_data["rear_ultrasound"] == 0:
+            self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
+            controller.target_angle += -self.direction * 90
+            self.current_stage = self._stage_4
+            self.turning = True
+
+    def _stage_4(self, controller: 'RobotController'):
+        if controller.sensor_data["left_encoder"] >= self.ticks_after_clearing_obstacle:
+            controller.total_ticks = controller.ticks_before_avoiding_obstacle - controller.ticks_obstacle_length
+            controller.target_angle += self.direction * 90
+            self.turning = True
+            self.done = True
+            # controller.change_state(axis_turn_state)
+
+
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
@@ -46,6 +107,8 @@ class RobotController:
 
         self.motor_ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
         self.angle_ser = serial.Serial('/dev/ttyUSB1', 115200, timeout=1)
+        # self.sonic_ser = serial.Serial('/dev/ttyUSB2', 57600, timeout=1)
+        self.sonic_ser = None
 
         self.current_state = init_state
         self.state_history = []
@@ -312,7 +375,7 @@ def obstacle_state(controller: RobotController):
             return
     elif controller.obstacle_stage == 3:
         if controller.sensor_data["left_encoder"] >= controller.ticks_after_clearing_obstacle:
-            controller.total_ticks = controller.ticks_before_avoiding_obstacle + controller.ticks_obstacle_length
+            controller.total_ticks = controller.ticks_before_avoiding_obstacle - controller.ticks_obstacle_length
             controller.target_angle += -90
             controller.obstacle_stage += 1
             controller.change_state(axis_turn_state)
