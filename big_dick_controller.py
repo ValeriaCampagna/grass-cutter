@@ -25,16 +25,6 @@ print(f"Joystick Name: {joystick.get_name()}")
 print(f"Number of Axes: {joystick.get_numaxes()}")
 print(f"Number of Buttons: {joystick.get_numbuttons()}")
 
-width = None
-height = None
-dimensions_file = "saved_work_area_dimensions.txt"
-if os.path.isfile(dimensions_file):
-    with open(dimensions_file, "r") as f:
-        wh = f.readline()
-        width, height = (float(i) for i in wh.split(","))
-        f.close()
-
-
 class ObstacleDetectionRoutine:
     def __init__(self, target_angle: int, remaining_turns: int):
         self.current_stage = self._stage_1
@@ -42,8 +32,10 @@ class ObstacleDetectionRoutine:
         self.ticks_before_avoiding_obstacle = 0
         self.ticks_after_clearing_obstacle = 0
         self.ticks_obstacle_length = 0
+        self.ultrasound_sequence = []
         self.done = False
-
+        # TODO: This might need to be more than 1 lane is the robot is much longer
+        #  than broad
         if remaining_turns > 1:
             # if target angle is 0 turn direction is -1 so turn right
             # else turn left
@@ -54,13 +46,29 @@ class ObstacleDetectionRoutine:
 
     def __call__(self, controller: 'RobotController'):
         if self.turning:
-            self.axis_turn()
+            self._axis_turn(controller)
         else:
             self.current_stage(controller)
             controller.forward()
 
-    def axis_turn(self):
-        pass
+    def _axis_turn(self, controller: 'RobotController'):
+        deviation = controller.axis_turn()
+        if deviation <= controller.angle_error_margin:
+            controller.reset_encoders()
+            self.turning = False
+
+    def _obstacle_passed(self, ultra_sound_value: int):
+        if len(self.ultrasound_sequence) > 0:
+            if self.ultrasound_sequence[-1] != ultra_sound_value:
+                self.ultrasound_sequence.append(ultra_sound_value)
+
+            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]]:
+                self.ultrasound_sequence = []
+                return True
+            return False
+        else:
+            self.ultrasound_sequence.append(ultra_sound_value)
+            return False
 
     def _stage_1(self, controller: 'RobotController'):
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
@@ -69,19 +77,19 @@ class ObstacleDetectionRoutine:
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        controller.forward()
-        # TODO: This needs to check if the rear ultrasound is 0 just after turning.
-        #  If it must we must advance until it's value is 1 and then 0
-        if controller.sensor_data["rear_ultrasound"] == 0:
+        # decide which ultrasound to use
+        ultrasound = controller.sensor_data["left_ultra_sound"] \
+            if self.direction == -1 else controller.sensor_data["right_ultrasound"]
+        if self._obstacle_passed(ultrasound):
             self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_3
             self.turning = True
 
     def _stage_3(self, controller: 'RobotController'):
-        # TODO: This needs to check if the rear ultrasound is 0 just after turning.
-        #  If it must we must advance until it's value is 1 and then 0
-        if controller.sensor_data["rear_ultrasound"] == 0:
+        ultrasound = controller.sensor_data["right_ultrasound"] \
+            if self.direction == -1 else controller.sensor_data["left_ultrasound"]
+        if self._obstacle_passed(ultrasound):
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_4
@@ -93,7 +101,6 @@ class ObstacleDetectionRoutine:
             controller.target_angle += self.direction * 90
             self.turning = True
             self.done = True
-            # controller.change_state(axis_turn_state)
 
 
 class RobotController:
@@ -121,11 +128,12 @@ class RobotController:
         self.turn_right_next = True
 
         self.total_ticks = 0
-        self.number_of_turns = -1
+        self.number_of_turns = 0
 
         # In centimeters. Just for testing
-        self.workspace_height = height if height is not None else 0
-        self.workspace_width = width if width is not None else 0 #4 * self.WHEEL_RADIUS
+        self.workspace_height = 0
+        self.workspace_width = 0
+        self.required_turns = 0
 
         self.homing_turns = 0
         self.homing = False
@@ -265,11 +273,15 @@ def map_state(controller: RobotController):
         # IMPORTANT:
         # 3 == Y button; pressing this means use stored mapping
         if button == 2 and not controller.mapping:
+            controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             if not (controller.workspace_width == controller.workspace_height == 0):
+                controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
                 controller.change_state(cruise_state)
+            else:
+                print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
 
         # Once we start turning it MUST mean we reached a corner
-        if button == (1,0):
+        if button == (1, 0):
             # 13 == right d-pad, 14 == left d-pad
             controller.workspace_height = controller.get_tracked_distance()
             controller.reset_encoders()
@@ -280,8 +292,10 @@ def map_state(controller: RobotController):
         if button == 10:
             # I add 10 Cm to the width because it seems to fall short most times.
             controller.workspace_width = controller.get_tracked_distance() + 10
-            print(f"Width {controller.workspace_width}, Height {controller.workspace_height}")
-            logging.info(f"Width {controller.workspace_width}, Height {controller.workspace_height}")
+            controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
+            m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
+            print(m)
+            logging.info(m)
             controller.reset_encoders()
             # Turn right one last time
             controller.target_angle = -180
@@ -291,10 +305,21 @@ def map_state(controller: RobotController):
             controller.change_state(turn_state)
 
 
+dimensions_file = "saved_work_area_dimensions.txt"
 def _save_mapped_dimensions(m_width, m_height):
     with open(dimensions_file, "w") as f:
         f.write(f"{round(m_width, 2)},{round(m_height, 2)}\n")
         f.close()
+
+
+def _load_saved_dimensions() -> (float, float):
+    if os.path.isfile(dimensions_file):
+        with open(dimensions_file, "r") as f:
+            wh = f.readline()
+            width, height = (float(i) for i in wh.split(","))
+            f.close()
+        return width, height
+    return 0, 0
 
 
 def homing_state(controller: RobotController):
@@ -324,7 +349,8 @@ def cruise_state(controller: RobotController):
     if (distance := controller.get_tracked_distance()) >= controller.workspace_height:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
-        if (controller.workspace_width // controller.WHEEL_RADIUS) <= (controller.number_of_turns - 1):
+        # controller.required_turns
+        if controller.required_turns <= (controller.number_of_turns - 1):
             if distance >= (controller.workspace_height + 45):
                 controller.change_state(end_state)
                 return
@@ -340,8 +366,8 @@ def cruise_state(controller: RobotController):
             controller.turn_right_next = True
         controller.change_state(turn_state)
     # Obstacle detection
-    # elif controller.sensor_data["front_1_ultrasound"] or controller.sensor_data["front_2_ultrasound"]:
-    #     controller.change_state(obstacle_state)
+    elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+        controller.change_state(ObstacleDetectionRoutine(controller.target_angle, controller.required_turns - controller.number_of_turns))
     else:
         controller.forward()
 
