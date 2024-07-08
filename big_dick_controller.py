@@ -114,8 +114,7 @@ class RobotController:
 
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
         self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
-        # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 57600, timeout=1)
-        self.sonic_ser = None
+        self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 57600, timeout=1)
 
         self.current_state = init_state
         self.state_history = []
@@ -200,23 +199,25 @@ class RobotController:
         self.motor_ser.write(command.encode())
 
     def update_sensor_readings(self):
-        data = self.angle_ser.readline().strip().decode('utf-8')
-        data_list = data.split(",")
-        if len(data_list) != 3:
-            print("Error parsing: ", data)
+        angle_data = self.angle_ser.readline().decode('utf-8').strip()
+        ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
+        angle_data_list = angle_data.split(",")
+        ultrasound_data_list = ultrasound_data.split(",")
+        if len(angle_data_list) != 3 or len(ultrasound_data_list) != 4:
+            print("Error one of: ", angle_data, ultrasound_data_list)
             return {}
 
         # The encoders are backwards
-        angle, right_encoder, left_encoder = data.split(",")
-
+        angle, right_encoder, left_encoder = angle_data_list
+        right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
         self.sensor_data = {
             "angle": round(float(angle) - self.angle_delta),
             "left_encoder": float(left_encoder) - self.total_ticks,
             "left_encoder_raw": float(left_encoder),
-            "left_ultrasound": 0,
-            "right_ultrasound": 0,
-            "front_ultrasound_1": 0,
-            "front_ultrasound_2": 0,
+            "left_ultrasound": int(left_ultrasound),
+            "right_ultrasound": int(right_ultrasound),
+            "front_ultrasound_1": int(front_ultra_1),
+            "front_ultrasound_2": int(front_ultra_2),
             "right_encoder": float(right_encoder)
         }
 
