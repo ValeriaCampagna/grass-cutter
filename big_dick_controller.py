@@ -45,11 +45,15 @@ class ObstacleDetectionRoutine:
             self.direction = int(target_angle == 0)
 
     def __call__(self, controller: 'RobotController'):
+        if self.done:
+            controller.change_state(cruise_state)
+            return
+
         if self.turning:
             self._axis_turn(controller)
         else:
             self.current_stage(controller)
-            controller.forward()
+            print("current stage", self.current_stage.__name__)
 
     def _axis_turn(self, controller: 'RobotController'):
         deviation = controller.axis_turn()
@@ -85,6 +89,8 @@ class ObstacleDetectionRoutine:
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_3
             self.turning = True
+        else:
+            controller.forward()
 
     def _stage_3(self, controller: 'RobotController'):
         ultrasound = controller.sensor_data["right_ultrasound"] \
@@ -94,6 +100,8 @@ class ObstacleDetectionRoutine:
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_4
             self.turning = True
+        else:
+            controller.forward()
 
     def _stage_4(self, controller: 'RobotController'):
         if controller.sensor_data["left_encoder"] >= self.ticks_after_clearing_obstacle:
@@ -101,7 +109,8 @@ class ObstacleDetectionRoutine:
             controller.target_angle += self.direction * 90
             self.turning = True
             self.done = True
-
+        else:
+            controller.forward()
 
 class RobotController:
     def __init__(self):
