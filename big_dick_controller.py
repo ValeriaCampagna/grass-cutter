@@ -106,9 +106,9 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        self.TURNING_SPEED = 70
-        self.LEFT_CRUISE_SPEED = 70
-        self.RIGHT_CRUISE_SPEED = 65
+        self.TURNING_SPEED = 65
+        self.LEFT_CRUISE_SPEED = 65
+        self.RIGHT_CRUISE_SPEED = 60
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
@@ -210,6 +210,7 @@ class RobotController:
         # The encoders are backwards
         angle, right_encoder, left_encoder = angle_data_list
         right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
+        print(front_ultra_2, front_ultra_1)
         self.sensor_data = {
             "angle": round(float(angle) - self.angle_delta),
             "left_encoder": float(left_encoder) - self.total_ticks,
