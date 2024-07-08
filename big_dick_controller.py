@@ -403,6 +403,7 @@ def end_state(controller: RobotController):
 
 
 robot = RobotController()
+time.sleep(2)
 try:
     while True:
         robot.update()
