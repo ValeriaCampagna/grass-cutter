@@ -9,4 +9,5 @@ while True:
         print(sonic_ser.readline().decode("utf-8"))
     except KeyboardInterrupt:
         sonic_ser.close()
+        break
         print("closing")
