@@ -106,9 +106,9 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        self.TURNING_SPEED = 60
-        self.LEFT_CRUISE_SPEED = 59
-        self.RIGHT_CRUISE_SPEED = 50
+        self.TURNING_SPEED = 70
+        self.LEFT_CRUISE_SPEED = 70
+        self.RIGHT_CRUISE_SPEED = 65
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
