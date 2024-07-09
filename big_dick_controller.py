@@ -81,7 +81,7 @@ class ObstacleDetectionRoutine:
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
         controller.target_angle += self.direction * 90
         self.current_stage = self._stage_2
-        self.turning = True
+        # self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
         # decide which ultrasound to use
