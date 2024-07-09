@@ -58,6 +58,7 @@ class ObstacleDetectionRoutine:
 
     def _axis_turn(self, controller: 'RobotController'):
         deviation = controller.axis_turn()
+        print(deviation)
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
             self.turning = False
