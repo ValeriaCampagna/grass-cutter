@@ -129,7 +129,7 @@ class RobotController:
         self.sonic_ser.flushInput()
         self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
         time.sleep(2)
-        self.angle_ser.flushImput()
+        self.angle_ser.flushInput()
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
 
         self.current_state = init_state
@@ -158,6 +158,7 @@ class RobotController:
         self.update_sensor_readings()
         self.current_state(self)
         self._controller_input()
+        time.sleep(0.01)
 
     def _controller_input(self):
         for event in pygame.event.get():
