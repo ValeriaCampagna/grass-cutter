@@ -85,6 +85,7 @@ class ObstacleDetectionRoutine:
 
     def _stage_2(self, controller: 'RobotController'):
         # decide which ultrasound to use
+        print("left ultra ", controller.sensor_data["left_ultrasound"])
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound):
