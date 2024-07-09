@@ -39,10 +39,10 @@ class ObstacleDetectionRoutine:
         if remaining_turns > 1:
             # if target angle is 0 turn direction is -1 so turn right
             # else turn left
-            self.direction = -1 if target_angle != 0 else 0
+            self.direction = -1 if target_angle == 0 else 1
         else:
             # if less 1 or not turns remain we must turn in the opposite direction
-            self.direction = 0 if target_angle == 0 else -1
+            self.direction = 1 if target_angle != 0 else -1
 
     def __call__(self, controller: 'RobotController'):
         if self.done:
