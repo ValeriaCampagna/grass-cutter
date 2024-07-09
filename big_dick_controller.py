@@ -64,7 +64,7 @@ class ObstacleDetectionRoutine:
 
     def _obstacle_passed(self, ultra_sound_value: int):
         if len(self.ultrasound_sequence) > 0:
-            print(self.ultrasound_sequence)
+            print(ultra_sound_value)
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
 
