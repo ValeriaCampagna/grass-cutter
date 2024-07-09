@@ -129,6 +129,7 @@ class RobotController:
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 57600, timeout=1)
         time.sleep(4)
         self.sonic_ser.flushInput()
+        self.angle_ser.flushInput()
         self.current_state = init_state
         self.state_history = []
         self.sensor_data: dict = dict()
