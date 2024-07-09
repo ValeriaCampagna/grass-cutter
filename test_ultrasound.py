@@ -8,8 +8,8 @@ sonic_ser.flushInput()
 
 while True:
     try:
-        if sonic_ser.in_waiting > 0:
-            print(sonic_ser.readline().decode("utf-8"))
+        # if sonic_ser.in_waiting > 0:
+        print(sonic_ser.readline().decode("utf-8"))
     except KeyboardInterrupt:
         sonic_ser.close()
         print("closing")
