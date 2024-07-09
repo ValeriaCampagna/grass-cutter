@@ -50,10 +50,11 @@ class ObstacleDetectionRoutine:
             return
 
         if self.turning:
+            print("U turn")
             self._axis_turn(controller)
         else:
-            self.current_stage(controller)
             print("current stage", self.current_stage.__name__)
+            self.current_stage(controller)
 
     def _axis_turn(self, controller: 'RobotController'):
         deviation = controller.axis_turn()
