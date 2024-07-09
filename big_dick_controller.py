@@ -124,12 +124,12 @@ class RobotController:
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
-        self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
-        self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 57600, timeout=1)
         time.sleep(3)
         self.sonic_ser.flushInput()
-        #self.angle_ser.flushInput()
+        self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
+        self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
+
         self.current_state = init_state
         self.state_history = []
         self.sensor_data: dict = dict()
