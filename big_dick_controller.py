@@ -64,7 +64,6 @@ class ObstacleDetectionRoutine:
 
     def _obstacle_passed(self, ultra_sound_value: int):
         if len(self.ultrasound_sequence) > 0:
-            print(self.ultrasound_sequence, ultra_sound_value)
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
 
@@ -81,11 +80,10 @@ class ObstacleDetectionRoutine:
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
         controller.target_angle += self.direction * 90
         self.current_stage = self._stage_2
-        # self.turning = True
+        self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
         # decide which ultrasound to use
-        print("left ultra ", controller.sensor_data["left_ultrasound"])
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound):
@@ -97,8 +95,8 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_3(self, controller: 'RobotController'):
-        ultrasound = controller.sensor_data["right_ultrasound"] \
-            if self.direction == -1 else controller.sensor_data["left_ultrasound"]
+        ultrasound = controller.sensor_data["left_ultrasound"] \
+            if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound):
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
@@ -115,6 +113,7 @@ class ObstacleDetectionRoutine:
             self.done = True
         else:
             controller.forward()
+
 
 class RobotController:
     def __init__(self):
