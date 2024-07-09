@@ -69,6 +69,7 @@ class ObstacleDetectionRoutine:
 
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]]:
                 self.ultrasound_sequence = []
+                print("Obstacle passed")
                 return True
             return False
         else:
