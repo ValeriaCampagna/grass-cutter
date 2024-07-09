@@ -58,6 +58,7 @@ class ObstacleDetectionRoutine:
 
     def _axis_turn(self, controller: 'RobotController'):
         deviation = controller.axis_turn()
+        print(deviation)
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
             self.turning = False
@@ -222,7 +223,7 @@ class RobotController:
         # The encoders are backwards
         angle, right_encoder, left_encoder = angle_data_list
         right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
-        print(front_ultra_2, front_ultra_1)
+        # print(front_ultra_2, front_ultra_1)
         self.sensor_data = {
             "angle": round(float(angle) - self.angle_delta),
             "left_encoder": float(left_encoder) - self.total_ticks,
