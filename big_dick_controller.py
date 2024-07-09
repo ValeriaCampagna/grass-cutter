@@ -158,7 +158,6 @@ class RobotController:
         self.update_sensor_readings()
         self.current_state(self)
         self._controller_input()
-        time.sleep(0.01)
 
     def _controller_input(self):
         for event in pygame.event.get():
