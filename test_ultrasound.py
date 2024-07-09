@@ -3,7 +3,7 @@ import serial
 
 sonic_ser = serial.Serial('/dev/arduinoUltrasound', 57600, timeout=1)
 
-time.sleep(2)
+time.sleep(5)
 sonic_ser.flushInput()
 
 while True:
