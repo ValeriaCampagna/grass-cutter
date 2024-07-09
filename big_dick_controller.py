@@ -58,7 +58,6 @@ class ObstacleDetectionRoutine:
 
     def _axis_turn(self, controller: 'RobotController'):
         deviation = controller.axis_turn()
-        print(deviation)
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
             self.turning = False
@@ -66,6 +65,7 @@ class ObstacleDetectionRoutine:
     def _obstacle_passed(self, ultra_sound_value: int):
         if len(self.ultrasound_sequence) > 0:
             if self.ultrasound_sequence[-1] != ultra_sound_value:
+                print(ultra_sound_value)
                 self.ultrasound_sequence.append(ultra_sound_value)
 
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]]:
