@@ -14,32 +14,29 @@ def test_serial(port, baudrate, name):
 
 
 # Test each device independently
-ultra = test_serial('/dev/arduinoUltrasound', 57600, 'Ultrasound')
+ultra = test_serial('/dev/arduinoUltrasound', 115200, 'Ultrasound')
 sensors = test_serial('/dev/arduinoSensors', 115200, 'Angle')
-sensors.flushInput()
 # test_serial('/dev/arduinoMotors', 115200, 'Motor')
 
-for _ in range(10):
-    sensors.readline()
-    ultra.readline()
+#for _ in range(10):
+#   sensors.readline()
+#   ultra.readline()
     # Add here for motor if needed
     # motor.readline()
 
 while True:
     # Synchronize reads
-    ultra.flushInput()
+#    ultra.flushInput()
     sensors.flushInput()
+    angle_data = sensors.readline().decode('utf-8').strip()
+    #if angle_data:
+    print(f"angles: {angle_data}")
 
     # Read ultrasound data
     ultra_data = ultra.readline().decode('utf-8').strip()
-    if ultra_data:
-        print(f"ultrasound: {ultra_data}")
-
-    # Read angle data
-    angle_data = sensors.readline().decode('utf-8').strip()
-    if angle_data:
-        print(f"angles: {angle_data}")
+    #if ultra_data:
+    print(f"ultrasound: {ultra_data}")
 
     # Add a small delay to prevent overwhelming the serial ports
-    time.sleep(0.1)
+#    time.sleep(0.1)
 
