@@ -15,15 +15,14 @@ pygame.joystick.init()
 # Check for joystick
 if pygame.joystick.get_count() == 0:
     print("No joystick connected.")
-    exit()
 
 # Initialize the joystick
-joystick = pygame.joystick.Joystick(0)
-joystick.init()
+#joystick = pygame.joystick.Joystick(0)
+#joystick.init()
 
-print(f"Joystick Name: {joystick.get_name()}")
-print(f"Number of Axes: {joystick.get_numaxes()}")
-print(f"Number of Buttons: {joystick.get_numbuttons()}")
+#print(f"Joystick Name: {joystick.get_name()}")
+#print(f"Number of Axes: {joystick.get_numaxes()}")
+#print(f"Number of Buttons: {joystick.get_numbuttons()}")
 
 width = None
 height = None
@@ -38,14 +37,14 @@ if os.path.isfile(dimensions_file):
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        self.TURNING_SPEED = 60
-        self.LEFT_CRUISE_SPEED = 59
-        self.RIGHT_CRUISE_SPEED = 50
+        self.TURNING_SPEED = 250
+        self.LEFT_CRUISE_SPEED = 230
+        self.RIGHT_CRUISE_SPEED = 225
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
-        self.motor_ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
-        self.angle_ser = serial.Serial('/dev/ttyUSB1', 115200, timeout=1)
+        self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
+        self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
 
         self.current_state = init_state
         self.state_history = []
@@ -188,6 +187,8 @@ def init_state(controller: RobotController):
 
 
 def map_state(controller: RobotController):
+    controller.change_state(cruise_state)
+    return
     if controller.mapping:
         controller.forward()
 
@@ -201,7 +202,7 @@ def map_state(controller: RobotController):
 
         # IMPORTANT:
         # 3 == Y button; pressing this means use stored mapping
-        if button == 2 and not controller.mapping:
+        if True: #button == 2 and not controller.mapping:
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.change_state(cruise_state)
 
