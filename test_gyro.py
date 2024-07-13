@@ -4,15 +4,10 @@ import serial
 def test_angle_serial():
     try:
         angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
-        time.sleep(3)
-        angle_ser.flushInput()
+        #angle_ser.flushInput()
         while True:
-            if angle_ser.in_waiting > 0:
-                line = angle_ser.readline().decode('utf-8').strip()
-                print(f"Angle: {line}")
-            else:
-                print("No data available.")
-            time.sleep(0.1)
+            line = angle_ser.readline().decode('utf-8').strip()
+            print(f"Angle: {line}")
     except serial.SerialException as e:
         print(f"Error opening or reading from serial port Angle: {e}")
     finally:
