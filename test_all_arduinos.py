@@ -4,14 +4,16 @@ import serial
 
 def test_serial(port, baudrate, name):
     ser = serial.Serial(port, baudrate, timeout=1)
-    time.sleep(3)
-    ser.flushInput()
+    if name == "Ultrasound":
+        time.sleep(3)
+        ser.flushInput()
     return ser
 
 
 # Test each device independently
 ultra = test_serial('/dev/arduinoUltrasound', 57600, 'Ultrasound')
 sensors = test_serial('/dev/arduinoSensors', 115200, 'Angle')
+sensors.flushInput()
 # test_serial('/dev/arduinoMotors', 115200, 'Motor')
 
 while True:
@@ -19,4 +21,4 @@ while True:
     print(f"ultrasound: {line}")
     gline = sensors.readline().decode('utf-8').strip()
     print(f"angles: {gline}")
-    time.sleep(0.1)
+    #time.sleep(0.1)
