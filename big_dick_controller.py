@@ -118,7 +118,7 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        # self.TURNING_SPEED = 135
+        # self.TURNING_SPEED = 150
         self.LEFT_CRUISE_SPEED = 120
         self.RIGHT_CRUISE_SPEED = 120
         # In Centimeters
@@ -309,8 +309,7 @@ def map_state(controller: RobotController):
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
-                controller.target_angle = -180
-                controller.change_state(turn_state)
+                controller.change_state(boost_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
 
