@@ -118,7 +118,7 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        # self.TURNING_SPEED = 150
+        self.TURNING_SPEED = 150
         self.LEFT_CRUISE_SPEED = 120
         self.RIGHT_CRUISE_SPEED = 120
         # In Centimeters
@@ -201,15 +201,15 @@ class RobotController:
     def u_turn(self):
         deviation = self.get_angle_deviation()
         logging.info(
-            f"Target Angle: {self.target_angle} | Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
+            f"U_TURN Target Angle: {self.target_angle} | Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
                 # print("Turning Right")
-                self.send_speed(self.LEFT_CRUISE_SPEED, -(self.RIGHT_CRUISE_SPEED//2))
+                self.send_speed(self.TURNING_SPEED, -(self.TURNING_SPEED//2))
             elif self.sensor_data["angle"] < self.target_angle:
                 # print("Turning Left")
-                self.send_speed(-(self.LEFT_CRUISE_SPEED//2), self.RIGHT_CRUISE_SPEED)
+                self.send_speed(-(self.TURNING_SPEED//2), self.TURNING_SPEED)
         return deviation
 
     def forward(self):
@@ -427,16 +427,14 @@ def turn_state(controller: RobotController):
     elif controller.get_tracked_distance() < 15:
         increase = 2
         if controller.cached_speeds == (0, 0):
-            controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+            controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
 
-        controller.LEFT_CRUISE_SPEED += increase
-        controller.RIGHT_CRUISE_SPEED += increase
-        print(f"Turn Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
-              f"| R = {controller.RIGHT_CRUISE_SPEED}")
+        controller.TURNING_SPEED += increase
+        print(f"Turn Current Speed: {controller.TURNING_SPEED}")
+
     elif controller.cached_speeds != (0, 0):
         cache = controller.cached_speeds
-        controller.LEFT_CRUISE_SPEED = cache[0]
-        controller.RIGHT_CRUISE_SPEED = cache[1]
+        controller.TURNING_SPEED = cache[0]
         controller.cached_speeds = (0, 0)
 
 
@@ -452,6 +450,7 @@ def boost_state(controller: RobotController):
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
         controller.forward()
     else:
+        controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED
         cache = controller.cached_speeds
         controller.LEFT_CRUISE_SPEED = cache[0]
         controller.RIGHT_CRUISE_SPEED = cache[1]
