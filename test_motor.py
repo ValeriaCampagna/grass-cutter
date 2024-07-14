@@ -17,20 +17,18 @@ try:
         #     print("current speed:", speed)
         #     time.sleep(0.2)
 
-        for i in range(100):
-            vals = angles_ser.readline().decode("utf-8").strip()
-            try:
-                _, lenc, renc = vals.split(",")
-                print("encoder left", vals)
-            except Exception:
-                print("Error reading")
-                time.sleep(0.1)
-                continue
-            if int(lenc) > 5760:
-                print("already moving setting speed to 90")
-                speed = 90
-                break
-            time.sleep(0.05)
+        vals = angles_ser.readline().decode("utf-8").strip()
+        try:
+            _, lenc, renc = vals.split(",")
+            print("encoder left", vals)
+        except Exception:
+            print("Error reading")
+            time.sleep(0.1)
+            continue
+        if int(lenc) > 5760:
+            print("already moving setting speed to 90")
+            speed = 90
+            break
         # time.sleep(3)
         # motor_ser.write("0,0\n".encode())
         # time.sleep(4)
