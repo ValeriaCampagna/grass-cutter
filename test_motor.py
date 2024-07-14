@@ -22,7 +22,7 @@ try:
                 break
             command = f"{speed},{speed}\n"
             motor_ser.write(command.encode())
-            speed = min(155, speed+8)
+            speed = min(180, speed+10)
             print("current speed:", speed)
             time.sleep(0.2)
         time.sleep(4)
