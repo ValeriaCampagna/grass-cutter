@@ -9,13 +9,13 @@ time.sleep(2)
 steps = 0
 try:
     while True:
-        # speed = 0
-        # for i in range(20):
-        #     command = f"{speed},{speed}\n"
-        #     motor_ser.write(command.encode())
-        #     speed = min(185, speed+10)
-        #     print("current speed:", speed)
-        #     time.sleep(0.2)
+        speed = 0
+        for i in range(20):
+            command = f"{speed},{speed}\n"
+            motor_ser.write(command.encode())
+            speed = min(185, speed+10)
+            print("current speed:", speed)
+            time.sleep(0.2)
 
         for i in range(100):
             angles_ser.flushInput()
@@ -32,8 +32,8 @@ try:
                 speed = 90
                 break
             time.sleep(0.05)
-        # time.sleep(3)
-        # motor_ser.write("0,0\n".encode())
-        # time.sleep(4)
+        time.sleep(3)
+        motor_ser.write("0,0\n".encode())
+        time.sleep(4)
 except KeyboardInterrupt:
     motor_ser.write("-10,-10\n".encode())
