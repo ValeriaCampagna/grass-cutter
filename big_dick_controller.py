@@ -397,6 +397,7 @@ def turn_state(controller: RobotController):
     # If we were previously turning and now have corrected the direction reset
     # the encoders to ensure we start from 0 Meters again.
     deviation = controller.forward()
+    print("turning distance: ", controller.get_tracked_distance())
     if deviation <= controller.angle_error_margin:
         # The radius between the center point of the wheels is 35 centimeters
         controller.reset_encoders()
@@ -408,7 +409,7 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
-    elif controller.get_tracked_distance() < 5:
+    elif controller.get_tracked_distance() < 10:
         increase = 2
         if controller.cached_speeds == (0, 0):
             controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
