@@ -408,10 +408,24 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
+    elif controller.get_tracked_distance() < 5:
+        increase = 2
+        if controller.cached_speeds == (0, 0):
+            controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+
+        controller.LEFT_CRUISE_SPEED += increase
+        controller.RIGHT_CRUISE_SPEED += increase
+        print(f"Turn Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
+              f"| R = {controller.RIGHT_CRUISE_SPEED}")
+    elif controller.cached_speeds != (0, 0):
+        cache = controller.cached_speeds
+        controller.LEFT_CRUISE_SPEED = cache[0]
+        controller.RIGHT_CRUISE_SPEED = cache[1]
+        controller.cached_speeds = (0, 0)
 
 
 def boost_state(controller: RobotController):
-    increase = 0.5
+    increase = 2
     if controller.cached_speeds == (0, 0):
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
 
