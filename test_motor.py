@@ -5,11 +5,11 @@ motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
 
 try:
     while True:
-        speed = 70
+        speed = 0
         for i in range(20):
             command = f"{speed},{speed}\n"
             motor_ser.write(command.encode())
-            speed = min(90, speed+1)
+            speed = min(155, speed+8)
             print("current speed:", speed)
             time.sleep(0.2)
         time.sleep(4)
