@@ -16,7 +16,7 @@ try:
                 print("Error reading")
                 time.sleep(0.1)
                 continue
-            if lenc > 5760:
+            if int(lenc) > 5760:
                 print("already moving")
                 speed = 90
                 break
