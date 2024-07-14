@@ -118,9 +118,9 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        self.TURNING_SPEED = 65
-        self.LEFT_CRUISE_SPEED = 65
-        self.RIGHT_CRUISE_SPEED = 60
+        # self.TURNING_SPEED = 135
+        self.LEFT_CRUISE_SPEED = 120
+        self.RIGHT_CRUISE_SPEED = 120
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
@@ -153,6 +153,9 @@ class RobotController:
         self.homing_turns = 0
         self.homing = False
         self.mapping = False
+
+        self.boost_increase = 0
+        self.cached_speeds = (0, 0)
 
     def update(self):
         self.update_sensor_readings()
@@ -190,9 +193,9 @@ class RobotController:
         print(self.sensor_data["angle"])
         if deviation > self.angle_error_margin:
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
+                self.send_speed(self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
+                self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
         return deviation
 
     def forward(self):
@@ -291,7 +294,7 @@ def map_state(controller: RobotController):
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
-                controller.change_state(cruise_state)
+                controller.change_state(boost_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
 
@@ -358,7 +361,7 @@ def homing_state(controller: RobotController):
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
-    # TODO: THIS shit might not be good at detecting whether we mapped or just start cutting
+    # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
     if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
@@ -408,10 +411,22 @@ def turn_state(controller: RobotController):
 
 
 def boost_state(controller: RobotController):
-    if controller.get_tracked_distance() > 10:
+    increase = 0.5
+    if controller.cached_speeds == (0, 0):
+        controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+
+    if controller.get_tracked_distance() < 5:
+        controller.LEFT_CRUISE_SPEED += increase
+        controller.RIGHT_CRUISE_SPEED += increase
+        print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
+              f"| R = {controller.RIGHT_CRUISE_SPEED}")
+        controller.forward()
+    else:
+        cache = controller.cached_speeds
+        controller.LEFT_CRUISE_SPEED = cache[0]
+        controller.RIGHT_CRUISE_SPEED = cache[1]
+        controller.cached_speeds = (0, 0)
         controller.change_state(cruise_state)
-        return
-    controller.send_speed(controller.LEFT_CRUISE_SPEED + 15, controller.RIGHT_CRUISE_SPEED + 15)
 
 
 def end_state(controller: RobotController):
