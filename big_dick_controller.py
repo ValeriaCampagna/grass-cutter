@@ -206,10 +206,10 @@ class RobotController:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
                 # print("Turning Right")
-                self.send_speed(self.TURNING_SPEED, -(self.TURNING_SPEED//2))
+                self.send_speed(255, -100)
             elif self.sensor_data["angle"] < self.target_angle:
                 # print("Turning Left")
-                self.send_speed(-(self.TURNING_SPEED//2), self.TURNING_SPEED)
+                self.send_speed(-100, 255)
         return deviation
 
     def forward(self):
