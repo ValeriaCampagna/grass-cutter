@@ -198,9 +198,24 @@ class RobotController:
                 self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
         return deviation
 
+    def u_turn(self):
+        deviation = self.get_angle_deviation()
+        logging.info(
+            f"Target Angle: {self.target_angle} | Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
+        if deviation > self.angle_error_margin:
+            # IF angle is positive stop right wheel and increase left wheel speed
+            if self.sensor_data["angle"] > self.target_angle:
+                # print("Turning Right")
+                self.send_speed(self.LEFT_CRUISE_SPEED, -(self.RIGHT_CRUISE_SPEED//2))
+            elif self.sensor_data["angle"] < self.target_angle:
+                # print("Turning Left")
+                self.send_speed(-(self.LEFT_CRUISE_SPEED//2), self.RIGHT_CRUISE_SPEED)
+        return deviation
+
     def forward(self):
         deviation = self.get_angle_deviation()
-        logging.info(f"Target Angle: {self.target_angle} | Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
+        logging.info(f"FORWARD: Target Angle: {self.target_angle} | "
+                     f"Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
@@ -294,7 +309,8 @@ def map_state(controller: RobotController):
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
-                controller.change_state(boost_state)
+                controller.target_angle = -180
+                controller.change_state(turn_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
 
@@ -396,7 +412,7 @@ def cruise_state(controller: RobotController):
 def turn_state(controller: RobotController):
     # If we were previously turning and now have corrected the direction reset
     # the encoders to ensure we start from 0 Meters again.
-    deviation = controller.forward()
+    deviation = controller.u_turn()
     print("turning distance: ", controller.get_tracked_distance())
     if deviation <= controller.angle_error_margin:
         # The radius between the center point of the wheels is 35 centimeters
