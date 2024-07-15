@@ -13,7 +13,9 @@ try:
         for i in range(20):
             command = f"{speed},{speed}\n"
             motor_ser.write(command.encode())
-            speed = min(185, speed+10)
+            speed = min(255, speed+20)
+            if speed == 255:
+                break
             print("current speed:", speed)
             time.sleep(0.2)
 
@@ -27,12 +29,12 @@ try:
                 print("Error reading")
                 time.sleep(0.1)
                 continue
-            if int(lenc) > 5760:
-                print("already moving setting speed to 90")
-                speed = 90
+            if int(lenc) > 660:
+                print("already moving setting speed to 200")
+                motor_ser.write("190,190\n".encode())
                 break
             time.sleep(0.05)
-        time.sleep(3)
+        time.sleep(6)
         motor_ser.write("0,0\n".encode())
         time.sleep(4)
 except KeyboardInterrupt:
