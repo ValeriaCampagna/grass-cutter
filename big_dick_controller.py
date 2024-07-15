@@ -210,7 +210,6 @@ class RobotController:
             elif self.sensor_data["angle"] < self.target_angle:
                 # print("Turning Left")
                 self.send_speed(-(self.TURNING_SPEED//2), self.TURNING_SPEED)
-            time.sleep(1)
         return deviation
 
     def forward(self):
