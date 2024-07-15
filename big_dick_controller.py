@@ -217,7 +217,7 @@ def map_state(controller: RobotController):
         # 3 == Y button; pressing this means use stored mapping
         if button == 2 and not controller.mapping:
             if not (controller.workspace_width == controller.workspace_height == 0):
-                controller.change_state(cruise_state)
+                controller.change_state(boost_state)
 
         # Once we start turning it MUST mean we reached a corner
         if button == (1,0):
