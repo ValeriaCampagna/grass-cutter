@@ -264,9 +264,9 @@ class RobotController:
         # values sent due to some communication issue we have to keep track of ticks taken
         # during turning manually like cavemen
         self.total_ticks = self.sensor_data["left_encoder_raw"]
-        self.send_speed(0, 0)
+        # self.send_speed(0, 0)
         # Stop for half a second to let the motors slow down
-        time.sleep(0.5)
+        # time.sleep(0.5)
 
     def reset_angle(self):
         self.angle_delta = self.sensor_data["angle"]
