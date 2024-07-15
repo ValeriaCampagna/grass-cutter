@@ -73,6 +73,8 @@ class RobotController:
         self.ticks_after_clearing_obstacle = None
         self.ticks_obstacle_length = None
 
+        self.cached_speeds = (0,0)
+
     def update(self):
         self.update_sensor_readings()
         if self.current_state.__name__ != "map_state":
