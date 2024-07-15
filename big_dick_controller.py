@@ -38,9 +38,9 @@ if os.path.isfile(dimensions_file):
 class RobotController:
     def __init__(self):
         # Initialize serial ports (update ports and baud rates as needed)
-        self.TURNING_SPEED = 60
-        self.LEFT_CRUISE_SPEED = 59
-        self.RIGHT_CRUISE_SPEED = 50
+        self.TURNING_SPEED = 140 
+        self.LEFT_CRUISE_SPEED = 130
+        self.RIGHT_CRUISE_SPEED = 130
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
@@ -277,7 +277,7 @@ def cruise_state(controller: RobotController):
             controller.turn_right_next = True
         controller.change_state(turn_state)
     # Obstacle detection
-    # elif controller.sensor_data["front_1_ultrasound"] or controller.sensor_data["front_2_ultrasound"]:
+    # elif controller.sensor_dat3["front_1_ultrasound"] or controller.sensor_data["front_2_ultrasound"]:
     #     controller.change_state(obstacle_state)
     else:
         controller.forward()
