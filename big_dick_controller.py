@@ -229,6 +229,7 @@ class RobotController:
 
     def send_speed(self, left_speed, right_speed):
         command = f"{right_speed},{left_speed}\n"
+        print(command, end="")
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
@@ -434,7 +435,7 @@ def turn_state(controller: RobotController):
 
 
 def boost_state(controller: RobotController):
-    increase = 1
+    increase = 0.5
     if controller.cached_speeds == (0, 0):
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
 
