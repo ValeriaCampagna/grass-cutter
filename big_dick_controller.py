@@ -157,12 +157,13 @@ class RobotController:
         self.distance_after_encoder_reset = 0
 
         self.stop_event = threading.Event()
-        self.angle_thread = threading.Thread(target=self.read_angle_data, daemon=True)
+        # self.angle_thread = threading.Thread(target=self.read_angle_data, daemon=True)
         self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
-        self.angle_thread.start()
+        # self.angle_thread.start()
         self.ultrasound_thread.start()
 
     def update(self):
+        self.read_angle_data()
         self.current_state(self)
         self._controller_input()
 
@@ -234,27 +235,23 @@ class RobotController:
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
-        while not self.stop_event.is_set():
-            # self.angle_ser.flushInput()
-            angle_data = self.angle_ser.readline().decode('utf-8').strip()
-            angle_data_list = angle_data.split(",")
-            if len(angle_data_list) != 3:
-                continue
+        # self.angle_ser.flushInput()
+        angle_data = self.angle_ser.readline().decode('utf-8').strip()
+        angle_data_list = angle_data.split(",")
+        if len(angle_data_list) != 3:
+            print("Error on angle ser parsing: ", angle_data)
+            return
 
-            angle, right_encoder, left_encoder = angle_data_list
-            # print("Angle: ", angle)
-            self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
-            self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks
-            self.sensor_data["left_encoder_raw"] = float(left_encoder)
-            self.sensor_data["right_encoder"] = float(right_encoder)
+        angle, right_encoder, left_encoder = angle_data_list
+        # print("Angle: ", angle)
+        self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
+        self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks
+        self.sensor_data["left_encoder_raw"] = float(left_encoder)
+        self.sensor_data["right_encoder"] = float(right_encoder)
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
-            try:
-                ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
-            except UnicodeDecodeError:
-                print("Error parsing angles input")
-                continue
+            ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
                 continue
