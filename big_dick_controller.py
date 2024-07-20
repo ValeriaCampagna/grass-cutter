@@ -107,7 +107,7 @@ class ObstacleDetectionRoutine:
 
     def _stage_4(self, controller: 'RobotController'):
         if controller.sensor_data["left_encoder"] >= self.ticks_after_clearing_obstacle:
-            controller.total_ticks = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
+            controller.total_ticks_left = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
             controller.target_angle += self.direction * 90
             self.turning = True
             self.done = True
@@ -140,7 +140,8 @@ class RobotController:
         self.distance_per_tick = 0.021
         self.turn_right_next = True
 
-        self.total_ticks = 0
+        self.total_ticks_left = 0
+        self.total_ticks_right = 0
         self.number_of_turns = 0
 
         # In centimeters
@@ -245,9 +246,10 @@ class RobotController:
         angle, right_encoder, left_encoder = angle_data_list
         # print("Angle: ", angle)
         self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
-        self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks
+        self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks_left
         self.sensor_data["left_encoder_raw"] = float(left_encoder)
         self.sensor_data["right_encoder"] = float(right_encoder)
+        self.sensor_data["right_encoder_row"] = float(right_encoder) - self.total_ticks_right
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
@@ -265,13 +267,18 @@ class RobotController:
     def reset_encoders(self):
         self.send_speed(-5, -5)
         time.sleep(0.5)
-        self.total_ticks = self.sensor_data["left_encoder_raw"]
+        self.total_ticks_left = self.sensor_data["left_encoder_raw"]
+        self.total_ticks_right = self.sensor_data["right_encoder_raw"]
 
     def reset_angle(self):
         self.angle_delta = self.sensor_data["angle"]
 
     def get_tracked_distance(self):
         covered_distance = round(self.distance_per_tick * self.sensor_data["left_encoder"], 2)
+        return covered_distance
+
+    def get_tracked_distance_right(self):
+        covered_distance = round(self.distance_per_tick * self.sensor_data["right_encoder"], 2)
         return covered_distance
 
     def halt(self):
@@ -410,7 +417,8 @@ def cruise_state(controller: RobotController):
 
 def turn_state(controller: RobotController):
     deviation = controller.u_turn()
-    print("turning distance: ", int(controller.get_tracked_distance()))
+    tracked_distance = controller.get_tracked_distance() if controller.turn_right_next else controller.get_tracked_distance_right()
+    print("turning distance: ", int(tracked_distance))
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
         if controller.mapping:
@@ -421,10 +429,10 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
-    elif int(controller.get_tracked_distance()) < 80:
+    elif int(tracked_distance) < 90:
         increase = 0.5
         if controller.cached_speeds == (0, 0):
-            controller.TURNING_SPEED = 180
+            controller.TURNING_SPEED = 160
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
 
         controller.TURNING_SPEED = min(255, controller.TURNING_SPEED + increase)
