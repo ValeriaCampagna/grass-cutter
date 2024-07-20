@@ -261,7 +261,7 @@ class RobotController:
             self.sensor_data["front_ultrasound_2"] = int(front_ultra_2)
 
     def reset_encoders(self):
-        self.send_speed(0, 0)
+        self.send_speed(-10, -10)
         time.sleep(0.5)
         self.total_ticks = self.sensor_data["left_encoder_raw"]
 
