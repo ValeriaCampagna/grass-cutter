@@ -117,9 +117,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 220
-        self.LEFT_CRUISE_SPEED = 120
-        self.RIGHT_CRUISE_SPEED = 120
+        self.TURNING_SPEED = 60#220
+        self.LEFT_CRUISE_SPEED = 60 #120
+        self.RIGHT_CRUISE_SPEED = 60#120
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
@@ -131,7 +131,8 @@ class RobotController:
 
         self.current_state = init_state
         self.state_history = []
-        self.sensor_data: dict = dict()
+        self.sensor_data: dict = {"front_ultrasound_1": 0, "front_ultrasound_2": 0,
+                                  "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
         self.angle_delta = 0
         self.angle_error_margin = 1
@@ -238,6 +239,7 @@ class RobotController:
                 continue
 
             angle, right_encoder, left_encoder = angle_data_list
+            print("Angle: ", angle)
             self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
             self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks
             self.sensor_data["left_encoder_raw"] = float(left_encoder)
@@ -249,7 +251,7 @@ class RobotController:
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
                 continue
-
+            print(f"R {right_ultrasound}, L {left_ultrasound}")
             right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
             self.sensor_data["left_ultrasound"] = int(left_ultrasound)
             self.sensor_data["right_ultrasound"] = int(right_ultrasound)
