@@ -251,8 +251,8 @@ class RobotController:
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
                 continue
-            print(f"R {right_ultrasound}, L {left_ultrasound}")
             right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
+            print(f"R {right_ultrasound}, L {left_ultrasound}")
             self.sensor_data["left_ultrasound"] = int(left_ultrasound)
             self.sensor_data["right_ultrasound"] = int(right_ultrasound)
             self.sensor_data["front_ultrasound_1"] = int(front_ultra_1)
@@ -271,6 +271,8 @@ class RobotController:
     def halt(self):
         print("Exiting Program")
         self.send_speed(0, 0)
+        self.angle_thread.join()
+        self.ultrasound_thread.join()
         self.motor_ser.close()
         self.angle_ser.close()
         self.sonic_ser.close()
