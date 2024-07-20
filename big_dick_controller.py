@@ -117,7 +117,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 180
+        self.TURNING_SPEED = 200
         self.LEFT_CRUISE_SPEED = 140
         self.RIGHT_CRUISE_SPEED = 140
         # In Centimeters
@@ -440,7 +440,7 @@ def boost_state(controller: RobotController):
     if controller.cached_speeds == (0, 0):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
-    print("Boost distance: ", controller.get_tracked_distance())
+    print("Boost distance: ", controller.get_tracked_distance(), controller.distance_after_encoder_reset)
     if (controller.get_tracked_distance() - controller.distance_after_encoder_reset) < 5:
         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
