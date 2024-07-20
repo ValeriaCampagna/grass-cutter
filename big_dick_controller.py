@@ -155,6 +155,7 @@ class RobotController:
         self.boost_increase = 0
         self.cached_speeds = (0, 0)
 
+        self.stop_event = threading.Event()
         self.angle_thread = threading.Thread(target=self.read_angle_data, daemon=True)
         self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
         self.angle_thread.start()
@@ -231,7 +232,7 @@ class RobotController:
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
-        while True:
+        while not self.stop_event.is_set():
             self.angle_ser.flushInput()
             angle_data = self.angle_ser.readline().decode('utf-8').strip()
             angle_data_list = angle_data.split(",")
@@ -246,7 +247,7 @@ class RobotController:
             self.sensor_data["right_encoder"] = float(right_encoder)
 
     def read_ultrasound_data(self):
-        while True:
+        while not self.stop_event.is_set():
             ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
@@ -271,6 +272,7 @@ class RobotController:
     def halt(self):
         print("Exiting Program")
         self.send_speed(0, 0)
+        self.stop_event.set()
         self.angle_thread.join()
         self.ultrasound_thread.join()
         self.motor_ser.close()
