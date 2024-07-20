@@ -117,7 +117,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 200
+        self.TURNING_SPEED = 180
         self.LEFT_CRUISE_SPEED = 140
         self.RIGHT_CRUISE_SPEED = 140
         # In Centimeters
@@ -181,7 +181,7 @@ class RobotController:
             elif button in [4, 6]:
                 change = +8 if button == 4 else -8
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
-                self.LEFT_CRUISE_SPEED += min(255, self.LEFT_CRUISE_SPEED + change)
+                self.LEFT_CRUISE_SPEED = min(255, self.LEFT_CRUISE_SPEED + change)
 
     def change_state(self, new_state):
         state_name = new_state.__name__ if hasattr(new_state, "__name__") else type(new_state).__name__
