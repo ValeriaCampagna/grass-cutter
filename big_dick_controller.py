@@ -250,7 +250,11 @@ class RobotController:
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
-            ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
+            try:
+                ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
+            except UnicodeDecodeError:
+                print("Error parsing angles input")
+                continue
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
                 continue
