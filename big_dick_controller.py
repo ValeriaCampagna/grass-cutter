@@ -248,8 +248,8 @@ class RobotController:
         self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
         self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks_left
         self.sensor_data["left_encoder_raw"] = float(left_encoder)
-        self.sensor_data["right_encoder"] = float(right_encoder)
-        self.sensor_data["right_encoder_raw"] = float(right_encoder) - self.total_ticks_right
+        self.sensor_data["right_encoder"] = float(right_encoder) - self.total_ticks_right
+        self.sensor_data["right_encoder_raw"] = float(right_encoder)
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
@@ -269,6 +269,7 @@ class RobotController:
         time.sleep(0.5)
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
+        logging.info(f"Total Encoder Ticks: L {self.total_ticks_left} | R {self.total_ticks_right}")
 
     def reset_angle(self):
         self.angle_delta = self.sensor_data["angle"]
@@ -417,7 +418,7 @@ def cruise_state(controller: RobotController):
 
 def turn_state(controller: RobotController):
     deviation = controller.u_turn()
-    tracked_distance = controller.get_tracked_distance() if controller.turn_right_next else controller.get_tracked_distance_right()
+    tracked_distance = controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
     print("turning distance: ", int(tracked_distance))
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
