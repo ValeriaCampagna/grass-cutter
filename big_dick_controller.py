@@ -215,8 +215,8 @@ class RobotController:
 
     def forward(self):
         deviation = self.get_angle_deviation()
-        logging.info(f"FORWARD: Target Angle: {self.target_angle} | "
-                     f"Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
+        # logging.info(f"FORWARD: Target Angle: {self.target_angle} | "
+        #              f"Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
