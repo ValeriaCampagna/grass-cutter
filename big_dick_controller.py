@@ -240,7 +240,7 @@ class RobotController:
                 continue
 
             angle, right_encoder, left_encoder = angle_data_list
-            print("Angle: ", angle)
+            # print("Angle: ", angle)
             self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
             self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks
             self.sensor_data["left_encoder_raw"] = float(left_encoder)
@@ -253,7 +253,7 @@ class RobotController:
             if len(ultrasound_data_list) != 4:
                 continue
             right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
-            print(f"R {right_ultrasound}, L {left_ultrasound}")
+            # print(f"R {right_ultrasound}, L {left_ultrasound}")
             self.sensor_data["left_ultrasound"] = int(left_ultrasound)
             self.sensor_data["right_ultrasound"] = int(right_ultrasound)
             self.sensor_data["front_ultrasound_1"] = int(front_ultra_1)
