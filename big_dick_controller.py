@@ -117,7 +117,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 220
+        self.TURNING_SPEED = 200
         self.LEFT_CRUISE_SPEED = 140
         self.RIGHT_CRUISE_SPEED = 140
         # In Centimeters
@@ -174,11 +174,11 @@ class RobotController:
                 continue
             button = event.button
             if button in [5, 7]:
-                change = +2 if button == 5 else -2
+                change = +8 if button == 5 else -8
                 print(f"Right Motor Speed: {self.RIGHT_CRUISE_SPEED} -> {self.RIGHT_CRUISE_SPEED + change}")
                 self.RIGHT_CRUISE_SPEED += change
             elif button in [4, 6]:
-                change = +2 if button == 4 else -2
+                change = +8 if button == 4 else -8
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
                 self.LEFT_CRUISE_SPEED += change
 
@@ -235,7 +235,7 @@ class RobotController:
 
     def read_angle_data(self):
         while not self.stop_event.is_set():
-            self.angle_ser.flushInput()
+            # self.angle_ser.flushInput()
             angle_data = self.angle_ser.readline().decode('utf-8').strip()
             angle_data_list = angle_data.split(",")
             if len(angle_data_list) != 3:
