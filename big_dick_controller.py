@@ -117,7 +117,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 200
+        self.TURNING_SPEED = 180
         self.LEFT_CRUISE_SPEED = 140
         self.RIGHT_CRUISE_SPEED = 140
         # In Centimeters
@@ -262,9 +262,9 @@ class RobotController:
             self.sensor_data["front_ultrasound_2"] = int(front_ultra_2)
 
     def reset_encoders(self):
-        self.total_ticks = self.sensor_data["left_encoder_raw"]
-        self.send_speed(-10, -10)
+        self.send_speed(-5, -5)
         time.sleep(0.5)
+        self.total_ticks = self.sensor_data["left_encoder_raw"]
 
     def reset_angle(self):
         self.angle_delta = self.sensor_data["angle"]
@@ -421,7 +421,7 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
-    elif int(controller.get_tracked_distance()) < 50:
+    elif int(controller.get_tracked_distance()) < 20:
         increase = 0.5
         if controller.cached_speeds == (0, 0):
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
