@@ -406,7 +406,7 @@ def cruise_state(controller: RobotController):
 
 def turn_state(controller: RobotController):
     deviation = controller.u_turn()
-    print("turning distance: ", controller.get_tracked_distance())
+    print("turning distance: ", int(controller.get_tracked_distance()))
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
         if controller.mapping:
@@ -417,7 +417,7 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
-    elif controller.get_tracked_distance() < 50:
+    elif int(controller.get_tracked_distance()) < 50:
         increase = 2
         if controller.cached_speeds == (0, 0):
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
