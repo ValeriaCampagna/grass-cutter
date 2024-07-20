@@ -154,6 +154,7 @@ class RobotController:
 
         self.boost_increase = 0
         self.cached_speeds = (0, 0)
+        self.distance_after_encoder_reset = 0
 
         self.stop_event = threading.Event()
         self.angle_thread = threading.Thread(target=self.read_angle_data, daemon=True)
@@ -380,7 +381,7 @@ def cruise_state(controller: RobotController):
     if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
-    offset = 5
+    offset = 15
     # If we reach the intended distance change to turn state
     if (distance := controller.get_tracked_distance()) >= controller.workspace_height - offset:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
@@ -437,6 +438,7 @@ def turn_state(controller: RobotController):
 def boost_state(controller: RobotController):
     increase = 0.5
     if controller.cached_speeds == (0, 0):
+        controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance())
     if controller.get_tracked_distance() < 5:
@@ -449,6 +451,7 @@ def boost_state(controller: RobotController):
         cache = controller.cached_speeds
         controller.LEFT_CRUISE_SPEED = cache[0]
         controller.RIGHT_CRUISE_SPEED = cache[1]
+        controller.distance_after_encoder_reset = 0
         controller.cached_speeds = (0, 0)
         controller.change_state(cruise_state)
 
