@@ -417,7 +417,7 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
-    elif controller.get_tracked_distance() < 30:
+    elif controller.get_tracked_distance() < 50:
         increase = 2
         if controller.cached_speeds == (0, 0):
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
