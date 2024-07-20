@@ -1,7 +1,7 @@
 import time
 import serial
 
-sonic_ser = serial.Serial('/dev/arduinoUltrasound', 57600, timeout=1)
+sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
 
 time.sleep(5)
 sonic_ser.flushInput()
