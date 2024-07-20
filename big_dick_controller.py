@@ -117,7 +117,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 180
+        self.TURNING_SPEED = 210
         self.LEFT_CRUISE_SPEED = 140
         self.RIGHT_CRUISE_SPEED = 140
         # In Centimeters
@@ -424,6 +424,7 @@ def turn_state(controller: RobotController):
     elif int(controller.get_tracked_distance()) < 70:
         increase = 0.5
         if controller.cached_speeds == (0, 0):
+            controller.TURNING_SPEED = 180
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
 
         controller.TURNING_SPEED = min(255, controller.TURNING_SPEED + increase)
