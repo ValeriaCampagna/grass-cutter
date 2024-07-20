@@ -3,10 +3,10 @@ import time
 import logging
 import serial
 import pygame
+import threading
 from pygame.locals import JOYBUTTONDOWN, JOYHATMOTION
 
 logging.basicConfig(filename="logs.txt", filemode="w", level=logging.INFO)
-
 
 # Initialize Pygame
 pygame.init()
@@ -117,7 +117,6 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        # Initialize serial ports (update ports and baud rates as needed)
         self.TURNING_SPEED = 220
         self.LEFT_CRUISE_SPEED = 120
         self.RIGHT_CRUISE_SPEED = 120
@@ -126,10 +125,8 @@ class RobotController:
 
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
         time.sleep(3)
-        self.sonic_ser.flushInput()
         self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
         time.sleep(2)
-        self.angle_ser.flushInput()
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
 
         self.current_state = init_state
@@ -145,7 +142,7 @@ class RobotController:
         self.total_ticks = 0
         self.number_of_turns = 0
 
-        # In centimeters. Just for testing
+        # In centimeters
         self.workspace_height = 0
         self.workspace_width = 0
         self.required_turns = 0
@@ -157,8 +154,12 @@ class RobotController:
         self.boost_increase = 0
         self.cached_speeds = (0, 0)
 
+        self.angle_thread = threading.Thread(target=self.read_angle_data, daemon=True)
+        self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
+        self.angle_thread.start()
+        self.ultrasound_thread.start()
+
     def update(self):
-        self.update_sensor_readings()
         self.current_state(self)
         self._controller_input()
 
@@ -205,10 +206,8 @@ class RobotController:
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
-                # print("Turning Right")
                 self.send_speed(self.TURNING_SPEED, -(self.TURNING_SPEED//2))
             elif self.sensor_data["angle"] < self.target_angle:
-                # print("Turning Left")
                 self.send_speed(-(self.TURNING_SPEED//2), self.TURNING_SPEED)
         return deviation
 
@@ -219,10 +218,8 @@ class RobotController:
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
-                # print("Turning Right")
                 self.send_speed(self.LEFT_CRUISE_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
-                # print("Turning Left")
                 self.send_speed(0, self.RIGHT_CRUISE_SPEED)
         else:
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
@@ -230,42 +227,37 @@ class RobotController:
 
     def send_speed(self, left_speed, right_speed):
         command = f"{right_speed},{left_speed}\n"
-        # print(f"R:{right_speed},L:{left_speed}")
         self.motor_ser.write(command.encode())
 
-    def update_sensor_readings(self):
-        self.angle_ser.flushInput()
-        angle_data = self.angle_ser.readline().decode('utf-8').strip()
-        ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
-        angle_data_list = angle_data.split(",")
-        ultrasound_data_list = ultrasound_data.split(",")
-        if len(angle_data_list) != 3 or len(ultrasound_data_list) != 4:
-            print("Error one of: ", angle_data, ultrasound_data_list)
-            return {}
+    def read_angle_data(self):
+        while True:
+            self.angle_ser.flushInput()
+            angle_data = self.angle_ser.readline().decode('utf-8').strip()
+            angle_data_list = angle_data.split(",")
+            if len(angle_data_list) != 3:
+                continue
 
-        # The encoders are backwards
-        angle, right_encoder, left_encoder = angle_data_list
-        right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
-        # print(front_ultra_2, front_ultra_1)
-        self.sensor_data = {
-            "angle": round(float(angle) - self.angle_delta),
-            "left_encoder": float(left_encoder) - self.total_ticks,
-            "left_encoder_raw": float(left_encoder),
-            "left_ultrasound": int(left_ultrasound),
-            "right_ultrasound": int(right_ultrasound),
-            "front_ultrasound_1": int(front_ultra_1),
-            "front_ultrasound_2": int(front_ultra_2),
-            "right_encoder": float(right_encoder)
-        }
+            angle, right_encoder, left_encoder = angle_data_list
+            self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
+            self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks
+            self.sensor_data["left_encoder_raw"] = float(left_encoder)
+            self.sensor_data["right_encoder"] = float(right_encoder)
+
+    def read_ultrasound_data(self):
+        while True:
+            ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
+            ultrasound_data_list = ultrasound_data.split(",")
+            if len(ultrasound_data_list) != 4:
+                continue
+
+            right_ultrasound, left_ultrasound, front_ultra_1, front_ultra_2 = ultrasound_data_list
+            self.sensor_data["left_ultrasound"] = int(left_ultrasound)
+            self.sensor_data["right_ultrasound"] = int(right_ultrasound)
+            self.sensor_data["front_ultrasound_1"] = int(front_ultra_1)
+            self.sensor_data["front_ultrasound_2"] = int(front_ultra_2)
 
     def reset_encoders(self):
-        # Since resetting encoders in the arduino code does not actually reset the encoder
-        # values sent due to some communication issue we have to keep track of ticks taken
-        # during turning manually like cavemen
         self.total_ticks = self.sensor_data["left_encoder_raw"]
-        # self.send_speed(0, 0)
-        # Stop for half a second to let the motors slow down
-        # time.sleep(0.5)
 
     def reset_angle(self):
         self.angle_delta = self.sensor_data["angle"]
@@ -277,12 +269,13 @@ class RobotController:
     def halt(self):
         print("Exiting Program")
         self.send_speed(0, 0)
-        self.motor_ser.close()  # Close motor serial port
-        self.angle_ser.close()  # Close angle serial port
+        self.motor_ser.close()
+        self.angle_ser.close()
+        self.sonic_ser.close()
 
 
 def init_state(controller: RobotController):
-    if controller.sensor_data == {}:
+    if not controller.sensor_data:
         return
 
     controller.send_speed(0, 0)
@@ -304,7 +297,7 @@ def map_state(controller: RobotController):
             controller.mapping = True
 
         # IMPORTANT:
-        # 3 == Y button; pressing this means use stored mapping
+        # 2 == Y button; pressing this means use stored mapping
         if button == 2 and not controller.mapping:
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             if not (controller.workspace_width == controller.workspace_height == 0):
@@ -342,7 +335,6 @@ dimensions_file = "saved_work_area_dimensions.txt"
 def _save_mapped_dimensions(m_width, m_height):
     with open(dimensions_file, "w") as f:
         f.write(f"{round(m_width, 2)},{round(m_height, 2)}\n")
-        f.close()
 
 
 def _load_saved_dimensions() -> (float, float):
@@ -350,7 +342,6 @@ def _load_saved_dimensions() -> (float, float):
         with open(dimensions_file, "r") as f:
             wh = f.readline()
             width, height = (float(i) for i in wh.split(","))
-            f.close()
         return width, height
     return 0, 0
 
@@ -400,7 +391,6 @@ def cruise_state(controller: RobotController):
             controller.target_angle = 0
             controller.turn_right_next = True
         controller.change_state(turn_state)
-    # Obstacle detection
     elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
         turns_left = controller.required_turns - controller.number_of_turns
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
@@ -409,12 +399,9 @@ def cruise_state(controller: RobotController):
 
 
 def turn_state(controller: RobotController):
-    # If we were previously turning and now have corrected the direction reset
-    # the encoders to ensure we start from 0 Meters again.
     deviation = controller.u_turn()
     print("turning distance: ", controller.get_tracked_distance())
     if deviation <= controller.angle_error_margin:
-        # The radius between the center point of the wheels is 35 centimeters
         controller.reset_encoders()
         if controller.mapping:
             controller.change_state(map_state)
@@ -450,7 +437,6 @@ def boost_state(controller: RobotController):
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
         controller.forward()
     else:
-        # controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED
         cache = controller.cached_speeds
         controller.LEFT_CRUISE_SPEED = cache[0]
         controller.RIGHT_CRUISE_SPEED = cache[1]
