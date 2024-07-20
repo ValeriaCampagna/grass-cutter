@@ -437,8 +437,8 @@ def boost_state(controller: RobotController):
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
 
     if controller.get_tracked_distance() < 5:
-        controller.LEFT_CRUISE_SPEED += increase
-        controller.RIGHT_CRUISE_SPEED += increase
+        controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
+        controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
         controller.forward()
