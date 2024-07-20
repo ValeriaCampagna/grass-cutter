@@ -278,7 +278,6 @@ class RobotController:
         print("Exiting Program")
         self.send_speed(0, 0)
         self.stop_event.set()
-        self.angle_thread.join()
         self.ultrasound_thread.join()
         self.motor_ser.close()
         self.angle_ser.close()
@@ -422,7 +421,7 @@ def turn_state(controller: RobotController):
             logging.info(controller.state_history)
             controller.number_of_turns += 1
             controller.change_state(boost_state)
-    elif int(controller.get_tracked_distance()) < 20:
+    elif int(controller.get_tracked_distance()) < 30:
         increase = 0.5
         if controller.cached_speeds == (0, 0):
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
@@ -442,7 +441,7 @@ def boost_state(controller: RobotController):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance(), controller.distance_after_encoder_reset)
-    if (controller.get_tracked_distance() - controller.distance_after_encoder_reset) < 5:
+    if (controller.get_tracked_distance() - controller.distance_after_encoder_reset) < 20:
         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
