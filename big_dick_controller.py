@@ -249,7 +249,7 @@ class RobotController:
         self.sensor_data["left_encoder"] = float(left_encoder) - self.total_ticks_left
         self.sensor_data["left_encoder_raw"] = float(left_encoder)
         self.sensor_data["right_encoder"] = float(right_encoder)
-        self.sensor_data["right_encoder_row"] = float(right_encoder) - self.total_ticks_right
+        self.sensor_data["right_encoder_raw"] = float(right_encoder) - self.total_ticks_right
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
