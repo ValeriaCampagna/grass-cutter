@@ -176,11 +176,11 @@ class RobotController:
             if button in [5, 7]:
                 change = +8 if button == 5 else -8
                 print(f"Right Motor Speed: {self.RIGHT_CRUISE_SPEED} -> {self.RIGHT_CRUISE_SPEED + change}")
-                self.RIGHT_CRUISE_SPEED += change
+                self.RIGHT_CRUISE_SPEED = min(255, self.RIGHT_CRUISE_SPEED + change)
             elif button in [4, 6]:
                 change = +8 if button == 4 else -8
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
-                self.LEFT_CRUISE_SPEED += change
+                self.LEFT_CRUISE_SPEED += min(255, self.LEFT_CRUISE_SPEED + change)
 
     def change_state(self, new_state):
         state_name = new_state.__name__ if hasattr(new_state, "__name__") else type(new_state).__name__
@@ -270,7 +270,7 @@ class RobotController:
         self.angle_delta = self.sensor_data["angle"]
 
     def get_tracked_distance(self):
-        covered_distance = self.distance_per_tick * self.sensor_data["left_encoder"]
+        covered_distance = round(self.distance_per_tick * self.sensor_data["left_encoder"], 2)
         return covered_distance
 
     def halt(self):
@@ -441,7 +441,7 @@ def boost_state(controller: RobotController):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance())
-    if (controller.get_tracked_distance() + controller.distance_after_encoder_reset) < 5:
+    if (controller.get_tracked_distance() - controller.distance_after_encoder_reset) < 5:
         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
