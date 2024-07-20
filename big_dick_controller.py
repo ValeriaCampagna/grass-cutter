@@ -229,7 +229,7 @@ class RobotController:
 
     def send_speed(self, left_speed, right_speed):
         command = f"{right_speed},{left_speed}\n"
-        print(command, end="")
+        # print(command, end="")
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
