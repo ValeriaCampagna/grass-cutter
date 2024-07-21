@@ -448,13 +448,12 @@ def turn_state(controller: RobotController):
 def adjust_state(controller: RobotController):
     deviation = controller.get_angle_deviation()
     if deviation > controller.angle_error_margin:
-        if deviation > controller.angle_error_margin:
-            print(f"Adjust speed: {controller.TURNING_SPEED}")
-            # IF angle is positive stop right wheel and increase left wheel speed
-            if controller.sensor_data["angle"] > controller.target_angle:
-                controller.send_speed(controller.TURNING_SPEED - 15, -controller.TURNING_SPEED - 15)
-            elif controller.sensor_data["angle"] < controller.target_angle:
-                controller.send_speed(-controller.TURNING_SPEED - 15, controller.TURNING_SPEED - 15)
+        print(f"Adjust speed: {controller.TURNING_SPEED}")
+        # IF angle is positive stop right wheel and increase left wheel speed
+        if controller.sensor_data["angle"] > controller.target_angle:
+            controller.send_speed(controller.TURNING_SPEED - 15, -controller.TURNING_SPEED - 15)
+        elif controller.sensor_data["angle"] < controller.target_angle:
+            controller.send_speed(-controller.TURNING_SPEED - 15, controller.TURNING_SPEED - 15)
     else:
         controller.change_state(boost_state)
         time.sleep(1)
