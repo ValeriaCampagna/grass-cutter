@@ -118,8 +118,8 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 220
-        self.LEFT_CRUISE_SPEED = 140
-        self.RIGHT_CRUISE_SPEED = 140
+        self.LEFT_CRUISE_SPEED = 130
+        self.RIGHT_CRUISE_SPEED = 130
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
@@ -447,7 +447,7 @@ def turn_state(controller: RobotController):
 
 def adjust_state(controller: RobotController):
     deviation = controller.get_angle_deviation()
-    if deviation > controller.angle_error_margin:
+    if deviation >= controller.angle_error_margin:
         print(f"Adjust speed: {controller.TURNING_SPEED}")
         # IF angle is positive stop right wheel and increase left wheel speed
         if controller.sensor_data["angle"] > controller.target_angle:
