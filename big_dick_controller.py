@@ -456,7 +456,6 @@ def adjust_state(controller: RobotController):
             controller.send_speed(controller.TURNING_SPEED - 15, -controller.TURNING_SPEED - 15)
     else:
         controller.change_state(boost_state)
-        time.sleep(1)
         controller.reset_encoders()
 
 
@@ -465,7 +464,7 @@ def boost_state(controller: RobotController):
     if controller.cached_speeds == (0, 0):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
-    print("Boost distance: ", controller.get_tracked_distance(), controller.distance_after_encoder_reset)
+    print("Boost distance: ", controller.sensor_data["left_encoder"], controller.total_ticks_left)
     if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 30:
         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
