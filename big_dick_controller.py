@@ -451,11 +451,13 @@ def boost_state(controller: RobotController):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance(), controller.distance_after_encoder_reset)
-    if (controller.get_tracked_distance() - controller.distance_after_encoder_reset) < 20:
+    if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 20:
         controller.LEFT_CRUISE_SPEED = min(250, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(250, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
+        if t < 10:
+            controller.send_speed(controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
         controller.forward()
     else:
         cache = controller.cached_speeds
