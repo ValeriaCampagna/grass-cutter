@@ -118,8 +118,8 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 220
-        self.LEFT_CRUISE_SPEED = 140
-        self.RIGHT_CRUISE_SPEED = 140
+        self.LEFT_CRUISE_SPEED = 155
+        self.RIGHT_CRUISE_SPEED = 155
         # In Centimeters
         self.WHEEL_RADIUS = 35
 
@@ -451,7 +451,7 @@ def boost_state(controller: RobotController):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance(), controller.distance_after_encoder_reset)
-    if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 20:
+    if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 30:
         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
