@@ -456,10 +456,7 @@ def boost_state(controller: RobotController):
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
-        if t < 15:
-            controller.send_speed(controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
-        else:
-            controller.forward()
+        controller.send_speed(controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     else:
         cache = controller.cached_speeds
         controller.LEFT_CRUISE_SPEED = cache[0]
