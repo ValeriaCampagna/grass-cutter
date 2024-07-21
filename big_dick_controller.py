@@ -429,7 +429,7 @@ def turn_state(controller: RobotController):
         else:
             logging.info(controller.state_history)
             controller.number_of_turns += 1
-            controller.change_state(boost_state)
+            controller.change_state(adjust_state)
     elif int(tracked_distance) < 60:
         increase = 0.5
         if controller.cached_speeds == (0, 0):
@@ -443,6 +443,20 @@ def turn_state(controller: RobotController):
         cache = controller.cached_speeds
         controller.TURNING_SPEED = cache[0]
         controller.cached_speeds = (0, 0)
+
+
+def adjust_state(controller: RobotController):
+    deviation = controller.get_angle_deviation()
+    if deviation > controller.angle_error_margin:
+        if deviation > controller.angle_error_margin:
+            # IF angle is positive stop right wheel and increase left wheel speed
+            if controller.sensor_data["angle"] > controller.target_angle:
+                controller.send_speed(controller.TURNING_SPEED - 15, -controller.TURNING_SPEED - 15)
+            elif controller.sensor_data["angle"] < controller.target_angle:
+                controller.send_speed(-controller.TURNING_SPEED - 15, controller.TURNING_SPEED - 15)
+    else:
+        controller.change_state(boost_state)
+        controller.reset_encoders()
 
 
 def boost_state(controller: RobotController):
