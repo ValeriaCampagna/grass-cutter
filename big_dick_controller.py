@@ -456,6 +456,7 @@ def adjust_state(controller: RobotController):
         elif controller.sensor_data["angle"] < controller.target_angle:
             controller.send_speed(controller.TURNING_SPEED - 15, -controller.TURNING_SPEED - 15)
     else:
+        time.sleep(1)
         controller.reset_encoders()
         controller.change_state(boost_state)
 
@@ -471,7 +472,9 @@ def boost_state(controller: RobotController):
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
-        controller.send_speed(controller.LEFT_CRUISE_SPEED - int(controller.LEFT_CRUISE_SPEED*0.1), controller.RIGHT_CRUISE_SPEED)
+        # controller.send_speed(controller.LEFT_CRUISE_SPEED,
+        # controller.RIGHT_CRUISE_SPEED - int(controller.RIGHT_CRUISE_SPEED*0.1))
+        controller.forward()
     else:
         cache = controller.cached_speeds
         controller.LEFT_CRUISE_SPEED = cache[0]
