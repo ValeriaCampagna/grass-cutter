@@ -266,9 +266,9 @@ class RobotController:
 
     def reset_encoders(self):
         self.send_speed(-5, -5)
-        time.sleep(0.5)
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
+        time.sleep(0.5)
         logging.info(f"Total Encoder Ticks: L {self.total_ticks_left} | R {self.total_ticks_right}")
 
     def reset_angle(self):
@@ -473,7 +473,7 @@ def boost_state(controller: RobotController):
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
         # controller.send_speed(controller.LEFT_CRUISE_SPEED,
-        # controller.RIGHT_CRUISE_SPEED - int(controller.RIGHT_CRUISE_SPEED*0.1))
+        # controller.RIGHT_CRUISE_SPEED - int(controller.LEFT_CRUISE_SPEED*0.1))
         controller.forward()
     else:
         cache = controller.cached_speeds
