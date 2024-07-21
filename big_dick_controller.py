@@ -231,7 +231,7 @@ class RobotController:
         return deviation
 
     def send_speed(self, left_speed, right_speed):
-        command = f"{right_speed},{left_speed}\n"
+        command = f"{min(right_speed, 255)},{min(left_speed, 255)}\n"
         # print(command, end="")
         self.motor_ser.write(command.encode())
 
@@ -452,8 +452,8 @@ def boost_state(controller: RobotController):
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance(), controller.distance_after_encoder_reset)
     if (controller.get_tracked_distance() - controller.distance_after_encoder_reset) < 20:
-        controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
-        controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
+        controller.LEFT_CRUISE_SPEED = min(250, controller.LEFT_CRUISE_SPEED + increase)
+        controller.RIGHT_CRUISE_SPEED = min(250, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
         controller.forward()
