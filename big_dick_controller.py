@@ -433,8 +433,8 @@ def turn_state(controller: RobotController):
     elif int(tracked_distance) < 90:
         increase = 0.5
         if controller.cached_speeds == (0, 0):
-            controller.TURNING_SPEED = 160
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
+            controller.TURNING_SPEED = 160
 
         controller.TURNING_SPEED = min(255, controller.TURNING_SPEED + increase)
         print(f"Turn Current Speed: {controller.TURNING_SPEED}")
