@@ -456,6 +456,7 @@ def adjust_state(controller: RobotController):
                 controller.send_speed(-controller.TURNING_SPEED - 15, controller.TURNING_SPEED - 15)
     else:
         controller.change_state(boost_state)
+        time.sleep(1)
         controller.reset_encoders()
 
 
