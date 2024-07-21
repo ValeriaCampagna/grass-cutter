@@ -50,7 +50,7 @@ class ObstacleDetectionRoutine:
             return
 
         if self.turning:
-            print("U turn")
+            print("Axis turn")
             self._axis_turn(controller)
         else:
             print("current stage", self.current_stage.__name__)
