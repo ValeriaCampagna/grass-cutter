@@ -213,7 +213,7 @@ class RobotController:
             if self.sensor_data["angle"] > self.target_angle:
                 self.send_speed(self.TURNING_SPEED, -50)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-50, self.TURNING_SPEED)
+                self.send_speed(-50, self.TURNING_SPEED - 15)
         return deviation
 
     def forward(self):
@@ -434,7 +434,7 @@ def turn_state(controller: RobotController):
         increase = 0.5
         if controller.cached_speeds == (0, 0):
             controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
-            controller.TURNING_SPEED = 160
+            controller.TURNING_SPEED = 180
 
         controller.TURNING_SPEED = min(255, controller.TURNING_SPEED + increase)
         print(f"Turn Current Speed: {controller.TURNING_SPEED}")
