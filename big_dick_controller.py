@@ -96,7 +96,7 @@ class ObstacleDetectionRoutine:
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         print(f"Stage 1 ultrasound: {'left' if self.direction == -1 else 'right'} {ultrasound}")
-        if self._obstacle_passed(ultrasound):
+        if controller.get_tracked_distance() > 50:
             self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_3
@@ -110,7 +110,7 @@ class ObstacleDetectionRoutine:
             boosting_protocol(self.controller, 0.3, 4, 220)
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
-        if self._obstacle_passed(ultrasound):
+        if controller.get_tracked_distance() > 50:
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_4
@@ -119,7 +119,7 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_4(self, controller: 'RobotController'):
-        if controller.sensor_data["left_encoder"] >= self.ticks_after_clearing_obstacle:
+        if controller.get_tracked_distance() > 50:
             controller.total_ticks_left = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
             controller.target_angle += self.direction * 90
             self.turning = True
