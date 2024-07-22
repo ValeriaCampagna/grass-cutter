@@ -278,6 +278,7 @@ class RobotController:
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
+            self.sonic_ser.flushInput()
             ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
