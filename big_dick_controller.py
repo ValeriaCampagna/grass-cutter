@@ -88,8 +88,8 @@ class ObstacleDetectionRoutine:
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        if controller.get_tracked_distance() < 5:
-            boosting_protocol(self.controller, 5)
+        if controller.get_tracked_distance() < 3:
+            boosting_protocol(self.controller, 0.2, 3)
         # decide which ultrasound to use
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
@@ -472,8 +472,7 @@ def adjust_state(controller: RobotController):
         controller.change_state(boost_state)
 
 
-def boosting_protocol(controller: RobotController, boost_distance: int):
-    increase = 0.5
+def boosting_protocol(controller: RobotController, increase: int | float, boost_distance: int):
     if controller.cached_speeds == (0, 0):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
@@ -494,7 +493,7 @@ def boosting_protocol(controller: RobotController, boost_distance: int):
 
 
 def boost_state(controller: RobotController):
-    if not boosting_protocol(controller, 15):
+    if not boosting_protocol(controller, 0.5, 15):
         controller.forward()
     else:
         controller.change_state(cruise_state)
