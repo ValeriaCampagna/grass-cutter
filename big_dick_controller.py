@@ -199,9 +199,9 @@ class RobotController:
         print(self.sensor_data["angle"])
         if deviation > self.angle_error_margin:
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
+                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
+                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
         return deviation
 
     def u_turn(self):
