@@ -289,7 +289,6 @@ class RobotController:
             self.sensor_data["right_ultrasound"] = int(right_ultrasound)
             self.sensor_data["front_ultrasound_1"] = int(front_ultra_1)
             self.sensor_data["front_ultrasound_2"] = int(front_ultra_2)
-            print("Ultra sound front readings: ", front_ultra_1, front_ultra_2)
 
     def reset_encoders(self):
         self.send_speed(-5, -5)
@@ -437,7 +436,7 @@ def cruise_state(controller: RobotController):
             controller.target_angle = 0
             controller.turn_right_next = True
         controller.change_state(turn_state)
-    elif True: #controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+    elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
         controller.send_speed(-20, -20)
         turns_left = controller.required_turns - controller.number_of_turns
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
