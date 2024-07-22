@@ -62,6 +62,8 @@ class ObstacleDetectionRoutine:
             self.current_stage(controller)
 
     def _axis_turn(self, controller: 'RobotController'):
+        if controller.get_tracked_distance() < 5:
+            boosting_protocol(self.controller, 0.3, 5, 255)
         deviation = controller.axis_turn()
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
@@ -72,7 +74,7 @@ class ObstacleDetectionRoutine:
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
 
-            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]]:
+            if self.ultrasound_sequence in [[0, 1], [0, 1, 0], [1, 0]]:
                 self.ultrasound_sequence = []
                 print("Obstacle passed")
                 return True
@@ -103,6 +105,8 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_3(self, controller: 'RobotController'):
+        if controller.get_tracked_distance() < 4:
+            boosting_protocol(self.controller, 0.3, 4, 220)
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound):
