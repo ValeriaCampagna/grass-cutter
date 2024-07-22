@@ -63,7 +63,7 @@ class ObstacleDetectionRoutine:
 
     def _axis_turn(self, controller: 'RobotController'):
         if controller.get_tracked_distance() < 10:
-            boosting_protocol(self.controller, 0.3, 10, 255)
+            boosting_protocol_turning(self.controller, 0.5, 10, 255)
         deviation = controller.axis_turn()
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
@@ -429,6 +429,23 @@ def cruise_state(controller: RobotController):
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
         controller.forward()
+
+
+def boosting_protocol_turning(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
+    if controller.cached_speeds == (0, 0):
+        controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
+        controller.TURNING_SPEED = 180
+    tracked_distance = controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
+
+    if tracked_distance < boost_distance:
+        controller.TURNING_SPEED = min(limit, controller.TURNING_SPEED + increase)
+        print(f"Turn Current Speed: {controller.TURNING_SPEED}")
+        return False
+    else:
+        cache = controller.cached_speeds
+        controller.TURNING_SPEED = cache[0]
+        controller.cached_speeds = (0, 0)
+        return True
 
 
 def turn_state(controller: RobotController):
