@@ -101,6 +101,7 @@ class ObstacleDetectionRoutine:
             controller.target_angle += -self.direction * 90
             self.current_stage = self._stage_3
             self.turning = True
+            controller.reset_encoders()
         else:
             controller.forward()
 
