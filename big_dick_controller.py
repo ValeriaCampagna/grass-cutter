@@ -28,6 +28,7 @@ print(f"Number of Buttons: {joystick.get_numbuttons()}")
 
 class ObstacleDetectionRoutine:
     def __init__(self, target_angle: int, remaining_turns: int):
+        self.controller = None
         self.current_stage = self._stage_1
         self.turning = False
         self.ticks_before_avoiding_obstacle = 0
@@ -45,6 +46,9 @@ class ObstacleDetectionRoutine:
             self.direction = 1 if target_angle != 0 else -1
 
     def __call__(self, controller: 'RobotController'):
+        if self.controller is None:
+            self.controller = controller
+
         if self.done:
             controller.change_state(cruise_state)
             return
@@ -75,6 +79,27 @@ class ObstacleDetectionRoutine:
         else:
             self.ultrasound_sequence.append(ultra_sound_value)
             return False
+
+    # def _mini_boost(self):
+    #     controller = self.controller
+    #     increase = 0.5
+    #     if controller.cached_speeds == (0, 0):
+    #         controller.distance_after_encoder_reset = controller.get_tracked_distance()
+    #         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+    #     print("Boost distance: ", controller.get_tracked_distance(), controller.sensor_data["left_encoder"])
+    #     if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 10:
+    #         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
+    #         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
+    #         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
+    #               f"| R = {controller.RIGHT_CRUISE_SPEED}")
+    #         # controller.send_speed(controller.LEFT_CRUISE_SPEED,
+    #         # controller.RIGHT_CRUISE_SPEED - int(controller.LEFT_CRUISE_SPEED*0.1))
+    #     else:
+    #         cache = controller.cached_speeds
+    #         controller.LEFT_CRUISE_SPEED = cache[0]
+    #         controller.RIGHT_CRUISE_SPEED = cache[1]
+    #         controller.distance_after_encoder_reset = 0
+    #         controller.cached_speeds = (0, 0)
 
     def _stage_1(self, controller: 'RobotController'):
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
@@ -263,6 +288,7 @@ class RobotController:
             self.sensor_data["right_ultrasound"] = int(right_ultrasound)
             self.sensor_data["front_ultrasound_1"] = int(front_ultra_1)
             self.sensor_data["front_ultrasound_2"] = int(front_ultra_2)
+            print("Ultra sound front readings: ", front_ultra_1, front_ultra_2)
 
     def reset_encoders(self):
         self.send_speed(-5, -5)
