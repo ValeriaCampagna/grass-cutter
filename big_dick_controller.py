@@ -468,7 +468,7 @@ def boost_state(controller: RobotController):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance(), controller.sensor_data["left_encoder"])
-    if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 30:
+    if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < 15:
         controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
         controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
