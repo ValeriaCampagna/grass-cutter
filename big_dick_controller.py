@@ -62,8 +62,8 @@ class ObstacleDetectionRoutine:
             self.current_stage(controller)
 
     def _axis_turn(self, controller: 'RobotController'):
-        if controller.get_tracked_distance() < 5:
-            boosting_protocol(self.controller, 0.3, 5, 255)
+        if controller.get_tracked_distance() < 10:
+            boosting_protocol(self.controller, 0.3, 10, 255)
         deviation = controller.axis_turn()
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
