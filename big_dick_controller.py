@@ -88,8 +88,8 @@ class ObstacleDetectionRoutine:
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        if controller.get_tracked_distance() < 5:
-            boosting_protocol(self.controller, 0.4, 5)
+        if controller.get_tracked_distance() < 4:
+            boosting_protocol(self.controller, 0.3, 4, 220)
         # decide which ultrasound to use
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
@@ -472,14 +472,14 @@ def adjust_state(controller: RobotController):
         controller.change_state(boost_state)
 
 
-def boosting_protocol(controller: RobotController, increase: int | float, boost_distance: int):
+def boosting_protocol(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
     if controller.cached_speeds == (0, 0):
         controller.distance_after_encoder_reset = controller.get_tracked_distance()
         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
     print("Boost distance: ", controller.get_tracked_distance(), controller.sensor_data["left_encoder"])
     if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < boost_distance:
-        controller.LEFT_CRUISE_SPEED = min(255, controller.LEFT_CRUISE_SPEED + increase)
-        controller.RIGHT_CRUISE_SPEED = min(255, controller.RIGHT_CRUISE_SPEED + increase)
+        controller.LEFT_CRUISE_SPEED = min(limit, controller.LEFT_CRUISE_SPEED + increase)
+        controller.RIGHT_CRUISE_SPEED = min(limit, controller.RIGHT_CRUISE_SPEED + increase)
         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
               f"| R = {controller.RIGHT_CRUISE_SPEED}")
         return False
@@ -493,7 +493,7 @@ def boosting_protocol(controller: RobotController, increase: int | float, boost_
 
 
 def boost_state(controller: RobotController):
-    if not boosting_protocol(controller, 0.5, 15):
+    if not boosting_protocol(controller, 0.5, 15, 255):
         controller.forward()
     else:
         controller.change_state(cruise_state)
