@@ -410,6 +410,7 @@ def cruise_state(controller: RobotController):
             controller.turn_right_next = True
         controller.change_state(turn_state)
     elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+        controller.send_speed(-20, -20)
         turns_left = controller.required_turns - controller.number_of_turns
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
