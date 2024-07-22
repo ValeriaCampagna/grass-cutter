@@ -88,7 +88,7 @@ class ObstacleDetectionRoutine:
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        if controller.get_tracked_distance() < 3:
+        if controller.get_tracked_distance() < 4:
             boosting_protocol(self.controller, 0.2, 3)
         # decide which ultrasound to use
         ultrasound = controller.sensor_data["left_ultrasound"] \
