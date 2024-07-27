@@ -36,8 +36,8 @@ try:
                 #     print("Left-Right")
                 # else:
                 print(button)
-            elif event.type == JOYHATMOTION and event.value == (1,0):
-                print("Right")
+            elif event.type == JOYHATMOTION:
+                print(event.value)
 
 except KeyboardInterrupt:
     print("Exiting...")
