@@ -49,6 +49,7 @@ class ObstacleDetectionRoutine:
     def __call__(self, controller: 'RobotController'):
         if self.controller is None:
             self.controller = controller
+            self.controller.cutting = False
 
         if self.done:
             controller.change_state(cruise_state)
@@ -130,11 +131,12 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 220
-        self.LEFT_CRUISE_SPEED = 140
-        self.RIGHT_CRUISE_SPEED = 140
+        self.TURNING_SPEED = 80
+        self.LEFT_CRUISE_SPEED = 80
+        self.RIGHT_CRUISE_SPEED = 80
         # In Centimeters
-        self.WHEEL_RADIUS = 35
+        self.WHEEL_RADIUS = 44
+        self.cutting = 0
 
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
         time.sleep(3)
@@ -150,6 +152,8 @@ class RobotController:
         self.angle_delta = 0
         self.angle_error_margin = 1
 
+        # wheel radius is 19 cm
+        # the amount of ticks for a full spin is ?
         self.distance_per_tick = 0.021
         self.turn_right_next = True
 
@@ -187,7 +191,7 @@ class RobotController:
             # L1: 4, L2: 6
             if event.type not in [JOYBUTTONDOWN]:
                 continue
-            button = event.button
+            button = event.button if event.type == JOYBUTTONDOWN else event.value
             if button in [5, 7]:
                 change = +8 if button == 5 else -8
                 print(f"Right Motor Speed: {self.RIGHT_CRUISE_SPEED} -> {self.RIGHT_CRUISE_SPEED + change}")
@@ -196,6 +200,24 @@ class RobotController:
                 change = +8 if button == 4 else -8
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
                 self.LEFT_CRUISE_SPEED = min(255, self.LEFT_CRUISE_SPEED + change)
+            elif button == 5:
+                print("#"*10, "EMERGENCY STOP", "#"*10)
+                self.change_state(end_state)
+                return
+
+            # MANUAL MODE
+            if self.current_state.__name__ == "manual_state":
+                pygame.event.pump()
+                if button == (1, 0):
+                    self.send_speed(self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
+                elif button == (0, 1):
+                    self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
+                elif button == (-1, 0):
+                    self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
+                elif button == (0, -1):
+                    self.send_speed(-self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
+                else:
+                    self.send_speed(0, 0)
 
     def change_state(self, new_state):
         state_name = new_state.__name__ if hasattr(new_state, "__name__") else type(new_state).__name__
@@ -224,9 +246,9 @@ class RobotController:
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED, -50)
+                self.send_speed(self.TURNING_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-50, self.TURNING_SPEED - 15)
+                self.send_speed(0, self.TURNING_SPEED - 15)
         return deviation
 
     def forward(self):
@@ -244,8 +266,24 @@ class RobotController:
         return deviation
 
     def send_speed(self, left_speed, right_speed):
-        command = f"{min(right_speed, 255)},{min(left_speed, 255)}\n"
-        # print(command, end="")
+        # v_d,v_i,d_d,d_i,s_d,s_i,cut
+        r_speed = abs(right_speed)
+        r_dir = 1
+        r_stop = 0
+        if right_speed < 0:
+            r_dir = 0
+            r_stop = 1 if right_speed == 0 else 0
+
+        l_speed = abs(left_speed)
+        l_dir = 1
+        l_stop = 0
+        if left_speed < 0:
+            r_dir = 0
+            r_stop = 1 if left_speed == 0 else 0
+
+        cutter = int(self.cutting)
+        # right wheel, left_wheel
+        command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
@@ -279,7 +317,7 @@ class RobotController:
             self.sensor_data["front_ultrasound_2"] = int(front_ultra_2)
 
     def reset_encoders(self):
-        self.send_speed(-5, -5)
+        self.send_speed(0, 0)
         time.sleep(0.5)
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
@@ -298,6 +336,7 @@ class RobotController:
 
     def halt(self):
         print("Exiting Program")
+        self.cutting = False
         self.send_speed(0, 0)
         self.stop_event.set()
         self.ultrasound_thread.join()
@@ -316,6 +355,10 @@ def init_state(controller: RobotController):
     controller.change_state(map_state)
 
 
+def manual_state(controller: RobotController):
+    return
+
+
 def map_state(controller: RobotController):
     if controller.mapping:
         controller.forward()
@@ -327,6 +370,11 @@ def map_state(controller: RobotController):
         # 0 == X button; pressing this means we start mapping
         if button == 0:
             controller.mapping = True
+
+        # Assuming square is 3
+        if controller.mapping is False and button == 3:
+            controller.change_state(manual_state)
+            return
 
         # IMPORTANT:
         # 2 == Y button; pressing this means use stored mapping
@@ -346,8 +394,8 @@ def map_state(controller: RobotController):
             controller.target_angle = -90
             controller.change_state(turn_state)
 
-        # Finish the mapping and save the dimensions. 5 == PlaysStation button
-        if button == 10:
+        # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
+        if button == (0, 0):
             # I add 10 Cm to the width because it seems to fall short most times.
             controller.workspace_width = controller.get_tracked_distance() + 10
             controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
@@ -399,7 +447,8 @@ def homing_state(controller: RobotController):
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
-    print(f"Ultrasounds {[controller.sensor_data['front_ultrasound_1'], controller.sensor_data['front_ultrasound_2']]}")
+    controller.cutting = True
+
     # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
     if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
@@ -432,6 +481,7 @@ def cruise_state(controller: RobotController):
         controller.forward()
 
 
+# TODO: Delete this
 def boosting_protocol_turning(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
     if controller.cached_speeds == (0, 0):
         controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
@@ -450,6 +500,7 @@ def boosting_protocol_turning(controller: RobotController, increase: int | float
 
 
 def turn_state(controller: RobotController):
+    controller.cutting = True
     deviation = controller.u_turn()
     tracked_distance = controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
     print("turning distance: ", int(tracked_distance))
@@ -479,6 +530,7 @@ def turn_state(controller: RobotController):
 
 
 def adjust_state(controller: RobotController):
+    controller.cutting = False
     deviation = controller.get_angle_deviation()
     print(f"Adjust dev: {deviation}, error: {controller.sensor_data['angle']}")
     if deviation >= controller.angle_error_margin:
@@ -515,6 +567,7 @@ def boosting_protocol(controller: RobotController, increase: int | float, boost_
 
 
 def boost_state(controller: RobotController):
+    controller.cutting = True
     if not boosting_protocol(controller, 0.5, 15, 255):
         controller.forward()
     else:

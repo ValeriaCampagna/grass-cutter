@@ -38,8 +38,8 @@ try:
                 print(button)
             elif event.type == JOYHATMOTION:
                 print(event.value)
-            horizontal = joystick.get_axis(0)
-            vertical = joystick.get_axis(1)
+            horizontal = int(joystick.get_axis(0))
+            vertical = int(joystick.get_axis(1))
             if not (horizontal == vertical == 0):
                 print(f"horizontal: {horizontal} | vertical : {vertical}")
 except KeyboardInterrupt:
