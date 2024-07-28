@@ -131,15 +131,15 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 80
-        self.LEFT_CRUISE_SPEED = 80
-        self.RIGHT_CRUISE_SPEED = 80
+        self.TURNING_SPEED = 50
+        self.LEFT_CRUISE_SPEED = 50
+        self.RIGHT_CRUISE_SPEED = 50
         # In Centimeters
         self.WHEEL_RADIUS = 44
         self.cutting = 0
 
-        self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
-        time.sleep(3)
+        # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
+        # time.sleep(3)
         self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
         time.sleep(2)
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
@@ -152,9 +152,7 @@ class RobotController:
         self.angle_delta = 0
         self.angle_error_margin = 1
 
-        # wheel radius is 19 cm
-        # the amount of ticks for a full spin is ?
-        self.distance_per_tick = 0.021
+        self.distance_per_tick = 0.204
         self.turn_right_next = True
 
         self.total_ticks_left = 0
@@ -174,11 +172,9 @@ class RobotController:
         self.cached_speeds = (0, 0)
         self.distance_after_encoder_reset = 0
 
-        self.stop_event = threading.Event()
-        # self.angle_thread = threading.Thread(target=self.read_angle_data, daemon=True)
-        self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
-        # self.angle_thread.start()
-        self.ultrasound_thread.start()
+        # self.stop_event = threading.Event()
+        # self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
+        # self.ultrasound_thread.start()
 
     def update(self):
         self.read_angle_data()
@@ -340,7 +336,7 @@ class RobotController:
         self.cutting = False
         self.send_speed(0, 0)
         self.stop_event.set()
-        self.ultrasound_thread.join()
+        # self.ultrasound_thread.join()
         self.motor_ser.close()
         self.angle_ser.close()
         self.sonic_ser.close()
@@ -396,7 +392,7 @@ def map_state(controller: RobotController):
             controller.change_state(turn_state)
 
         # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
-        if button == (0, 0):
+        if button == (0, -1):
             # I add 10 Cm to the width because it seems to fall short most times.
             controller.workspace_width = controller.get_tracked_distance() + 10
             controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
@@ -474,7 +470,7 @@ def cruise_state(controller: RobotController):
             controller.target_angle = 0
             controller.turn_right_next = True
         controller.change_state(turn_state)
-    elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+    elif 0: #controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
         turns_left = controller.required_turns - controller.number_of_turns
         controller.reset_encoders()
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
