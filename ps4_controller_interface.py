@@ -38,11 +38,11 @@ try:
                 print(button)
             elif event.type == JOYHATMOTION:
                 print(event.value)
-            pygame.event.pump()
-            horizontal = round(joystick.get_axis(0), 2)
-            vertical = round(joystick.get_axis(1), 2)
-            if not (horizontal == vertical == 0):
-                print(f"horizontal: {horizontal} | vertical : {vertical}")
+           #pygame.event.pump()
+           #horizontal = round(joystick.get_axis(0), 2)
+           #vertical = round(joystick.get_axis(1), 2)
+           #if not (horizontal == vertical == 0):
+           #    print(f"horizontal: {horizontal} | vertical : {vertical}")
 except KeyboardInterrupt:
     print("Exiting...")
     pygame.quit()
