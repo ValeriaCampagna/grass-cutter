@@ -192,12 +192,13 @@ class RobotController:
             if event.type not in [JOYBUTTONDOWN]:
                 continue
             button = event.button if event.type == JOYBUTTONDOWN else event.value
+            change_factor = 2
             if button in [5, 7]:
-                change = +8 if button == 5 else -8
+                change = +change_factor if button == 5 else -change_factor
                 print(f"Right Motor Speed: {self.RIGHT_CRUISE_SPEED} -> {self.RIGHT_CRUISE_SPEED + change}")
                 self.RIGHT_CRUISE_SPEED = min(255, self.RIGHT_CRUISE_SPEED + change)
             elif button in [4, 6]:
-                change = +8 if button == 4 else -8
+                change = +change_factor if button == 4 else -change_factor
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
                 self.LEFT_CRUISE_SPEED = min(255, self.LEFT_CRUISE_SPEED + change)
             elif button == 5:
@@ -210,10 +211,10 @@ class RobotController:
                 pygame.event.pump()
                 if button == (1, 0):
                     self.send_speed(self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
-                elif button == (0, 1):
-                    self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
                 elif button == (-1, 0):
                     self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
+                elif button == (0, 1):
+                    self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
                 elif button == (0, -1):
                     self.send_speed(-self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
                 else:
