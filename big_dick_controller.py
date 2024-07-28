@@ -152,7 +152,7 @@ class RobotController:
         self.angle_delta = 0
         self.angle_error_margin = 1
 
-        self.distance_per_tick = 0.204
+        self.distance_per_tick = 0.211
         self.turn_right_next = True
 
         self.total_ticks_left = 0
@@ -325,6 +325,7 @@ class RobotController:
 
     def get_tracked_distance(self):
         covered_distance = round(self.distance_per_tick * self.sensor_data["left_encoder"], 2)
+        print("Distance:", covered_distance)
         return covered_distance
 
     def get_tracked_distance_right(self):
