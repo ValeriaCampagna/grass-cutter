@@ -284,7 +284,7 @@ class RobotController:
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
-        # self.angle_ser.flushInput()
+        self.angle_ser.flushInput()
         angle_data = self.angle_ser.readline().decode('utf-8').strip()
         angle_data_list = angle_data.split(",")
         if len(angle_data_list) != 3:

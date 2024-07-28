@@ -4,7 +4,7 @@ import serial
 def test_angle_serial():
     try:
         angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
-        #angle_ser.flushInput()
+        angle_ser.flushInput()
         while True:
             line = angle_ser.readline().decode('utf-8').strip()
             print(f"Angle: {line}")
