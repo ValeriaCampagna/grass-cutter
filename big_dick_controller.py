@@ -335,7 +335,7 @@ class RobotController:
         print("Exiting Program")
         self.cutting = False
         self.send_speed(0, 0)
-        self.stop_event.set()
+        #self.stop_event.set()
         # self.ultrasound_thread.join()
         self.motor_ser.close()
         self.angle_ser.close()
