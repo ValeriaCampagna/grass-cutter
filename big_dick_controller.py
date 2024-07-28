@@ -131,9 +131,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 50
-        self.LEFT_CRUISE_SPEED = 50
-        self.RIGHT_CRUISE_SPEED = 50
+        self.TURNING_SPEED = 20
+        self.LEFT_CRUISE_SPEED = 20
+        self.RIGHT_CRUISE_SPEED = 20
         # In Centimeters
         self.WHEEL_RADIUS = 44
         self.cutting = 0
@@ -264,14 +264,14 @@ class RobotController:
 
     def send_speed(self, left_speed, right_speed):
         # v_d,v_i,d_d,d_i,s_d,s_i,cut
-        r_speed = abs(right_speed)
+        r_speed = abs(min(right_speed, 50))
         r_dir = 1
         r_stop = 0
         if right_speed < 0:
             r_dir = 0
             r_stop = 1 if right_speed == 0 else 0
 
-        l_speed = abs(left_speed)
+        l_speed = abs(min(left_speed, 50))
         l_dir = 1
         l_stop = 0
         if left_speed < 0:
@@ -565,7 +565,7 @@ def boosting_protocol(controller: RobotController, increase: int | float, boost_
 
 def boost_state(controller: RobotController):
     controller.cutting = True
-    if not boosting_protocol(controller, 0.5, 15, 255):
+    if False: #not boosting_protocol(controller, 0.5, 15, 255):
         controller.forward()
     else:
         controller.change_state(cruise_state)
