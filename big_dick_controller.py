@@ -277,8 +277,8 @@ class RobotController:
         l_dir = 1
         l_stop = 0
         if left_speed <= 0:
-            r_dir = 0
-            r_stop = 1 if left_speed == 0 else 0
+            l_dir = 0
+            l_stop = 1 if left_speed == 0 else 0
 
         cutter = int(self.cutting)
         # right wheel, left_wheel
