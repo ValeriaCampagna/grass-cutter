@@ -296,9 +296,9 @@ class RobotController:
         angle, right_encoder, left_encoder = angle_data_list
         # print("Angle: ", angle)
         self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
-        self.sensor_data["left_encoder"] = abs(float(left_encoder) - self.total_ticks_left)
+        self.sensor_data["left_encoder"] = abs(float(left_encoder)) - self.total_ticks_left
         self.sensor_data["left_encoder_raw"] = abs(float(left_encoder))
-        self.sensor_data["right_encoder"] = abs(float(right_encoder) - self.total_ticks_right)
+        self.sensor_data["right_encoder"] = abs(float(right_encoder)) - self.total_ticks_right
         self.sensor_data["right_encoder_raw"] = abs(float(right_encoder))
 
     def read_ultrasound_data(self):
