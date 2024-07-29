@@ -215,6 +215,8 @@ class RobotController:
                     self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
                 elif button == (0, -1):
                     self.send_speed(-self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
+                elif button == 12:
+                    self.cutting = not self.cutting
                 else:
                     self.send_speed(0, 0)
 
