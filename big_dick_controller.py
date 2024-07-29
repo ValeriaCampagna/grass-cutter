@@ -283,6 +283,7 @@ class RobotController:
         cutter = int(self.cutting)
         # right wheel, left_wheel
         command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
+        logging.info("Speed Message: ", command)
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
