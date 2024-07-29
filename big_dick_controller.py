@@ -515,19 +515,19 @@ def turn_state(controller: RobotController):
             controller.number_of_turns += 1
             # TODO: Adjust state was used here
             controller.change_state(cruise_state)
-    elif int(tracked_distance) < 60:
-        increase = 0.5
-        if controller.cached_speeds == (0, 0):
-            controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
-            controller.TURNING_SPEED = 180
-
-        controller.TURNING_SPEED = min(255, controller.TURNING_SPEED + increase)
-        print(f"Turn Current Speed: {controller.TURNING_SPEED}")
-
-    elif controller.cached_speeds != (0, 0):
-        cache = controller.cached_speeds
-        controller.TURNING_SPEED = cache[0]
-        controller.cached_speeds = (0, 0)
+    # elif int(tracked_distance) < 60:
+    #     increase = 0.5
+    #     if controller.cached_speeds == (0, 0):
+    #         controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
+    #         controller.TURNING_SPEED = 180
+    #
+    #     controller.TURNING_SPEED = min(255, controller.TURNING_SPEED + increase)
+    #     print(f"Turn Current Speed: {controller.TURNING_SPEED}")
+    #
+    # elif controller.cached_speeds != (0, 0):
+    #     cache = controller.cached_speeds
+    #     controller.TURNING_SPEED = cache[0]
+    #     controller.cached_speeds = (0, 0)
 
 
 def adjust_state(controller: RobotController):
