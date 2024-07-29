@@ -201,7 +201,7 @@ class RobotController:
                 print("#"*10, "EMERGENCY STOP", "#"*10)
                 self.change_state(end_state)
                 return
-
+            print(self.current_state.__name__)
             # MANUAL MODE
             if self.current_state.__name__ == "manual_state":
                 pygame.event.pump()
