@@ -133,7 +133,7 @@ class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 10
         self.LEFT_CRUISE_SPEED = 5
-        self.RIGHT_CRUISE_SPEED = 8
+        self.RIGHT_CRUISE_SPEED = 6
         # In Centimeters
         self.WHEEL_RADIUS = 44
         self.cutting = 0
@@ -152,7 +152,7 @@ class RobotController:
         self.angle_delta = 0
         self.angle_error_margin = 1
 
-        self.distance_per_tick = 0.211
+        self.distance_per_tick = 0.22
         self.turn_right_next = True
 
         self.total_ticks_left = 0
@@ -264,7 +264,7 @@ class RobotController:
 
     def send_speed(self, left_speed, right_speed):
         # v_d,v_i,d_d,d_i,s_d,s_i,cut
-        r_speed = abs(min(right_speed, 8))
+        r_speed = abs(min(right_speed, 6))
         r_dir = 1
         r_stop = 0
         if right_speed < 0:
