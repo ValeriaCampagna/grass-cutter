@@ -327,7 +327,6 @@ class RobotController:
 
     def get_tracked_distance(self):
         covered_distance = round(self.distance_per_tick * self.sensor_data["left_encoder"], 2)
-        print("Distance:", covered_distance)
         return covered_distance
 
     def get_tracked_distance_right(self):
