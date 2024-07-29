@@ -186,8 +186,8 @@ class RobotController:
             # R1: 5, R2: 7
             # L1: 4, L2: 6
 
-            # if event.type not in [JOYBUTTONDOWN]:
-            #     continue
+            if event.type not in [JOYBUTTONDOWN, JOYHATMOTION]:
+                continue
             button = event.button if event.type == JOYBUTTONDOWN else event.value
             change_factor = 2
             if button in [5, 7]:
