@@ -198,7 +198,7 @@ class RobotController:
                 change = +change_factor if button == 4 else -change_factor
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
                 self.LEFT_CRUISE_SPEED = min(255, self.LEFT_CRUISE_SPEED + change)
-            elif button == 5:
+            elif button == 10:
                 print("#"*10, "EMERGENCY STOP", "#"*10)
                 self.change_state(end_state)
                 return
