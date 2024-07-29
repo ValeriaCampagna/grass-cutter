@@ -458,7 +458,7 @@ def cruise_state(controller: RobotController):
         controller.reset_angle()
     offset = 15
     # If we reach the intended distance change to turn state
-    if (distance := controller.get_tracked_distance()) >= controller.workspace_height - offset:
+    if (distance := controller.get_tracked_distance()) >= controller.workspace_height:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
         if controller.required_turns <= controller.number_of_turns:
