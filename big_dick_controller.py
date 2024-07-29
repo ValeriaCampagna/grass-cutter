@@ -150,7 +150,7 @@ class RobotController:
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
         self.angle_delta = 0
-        self.angle_error_margin = 0.5
+        self.angle_error_margin = 1
 
         self.distance_per_tick = 0.70
         self.turn_right_next = True
