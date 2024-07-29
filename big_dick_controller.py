@@ -211,7 +211,8 @@ class RobotController:
                 elif button == (-1, 0):
                     self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
                 elif button == (0, 1):
-                    self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
+                    self.forward()
+                    # self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
                 elif button == (0, -1):
                     self.send_speed(-self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
                 else:
