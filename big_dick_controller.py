@@ -185,8 +185,9 @@ class RobotController:
         for event in pygame.event.get():
             # R1: 5, R2: 7
             # L1: 4, L2: 6
-            if event.type not in [JOYBUTTONDOWN]:
-                continue
+
+            # if event.type not in [JOYBUTTONDOWN]:
+            #     continue
             button = event.button if event.type == JOYBUTTONDOWN else event.value
             change_factor = 2
             if button in [5, 7]:
@@ -201,7 +202,7 @@ class RobotController:
                 print("#"*10, "EMERGENCY STOP", "#"*10)
                 self.change_state(end_state)
                 return
-            print(self.current_state.__name__)
+
             # MANUAL MODE
             if self.current_state.__name__ == "manual_state":
                 pygame.event.pump()
