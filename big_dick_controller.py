@@ -193,11 +193,11 @@ class RobotController:
             if button in [5, 7]:
                 change = +change_factor if button == 5 else -change_factor
                 print(f"Right Motor Speed: {self.RIGHT_CRUISE_SPEED} -> {self.RIGHT_CRUISE_SPEED + change}")
-                self.RIGHT_CRUISE_SPEED = min(255, self.RIGHT_CRUISE_SPEED + change)
+                self.RIGHT_CRUISE_SPEED = min(self.RIGHT_CRUISE_SPEED + 10, self.RIGHT_CRUISE_SPEED + change)
             elif button in [4, 6]:
                 change = +change_factor if button == 4 else -change_factor
                 print(f"Left Motor Speed: {self.LEFT_CRUISE_SPEED} -> {self.LEFT_CRUISE_SPEED + change}")
-                self.LEFT_CRUISE_SPEED = min(255, self.LEFT_CRUISE_SPEED + change)
+                self.LEFT_CRUISE_SPEED = min(self.LEFT_CRUISE_SPEED + 10, self.LEFT_CRUISE_SPEED + change)
             elif button == 10:
                 print("#"*10, "EMERGENCY STOP", "#"*10)
                 self.change_state(end_state)
@@ -245,9 +245,9 @@ class RobotController:
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED, 0)
+                self.send_speed(self.LEFT_CRUISE_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(0, self.TURNING_SPEED)
+                self.send_speed(0, self.RIGHT_CRUISE_SPEED)
         return deviation
 
     def forward(self):
