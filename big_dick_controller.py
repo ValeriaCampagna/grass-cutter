@@ -152,7 +152,7 @@ class RobotController:
         self.angle_delta = 0
         self.angle_error_margin = 1
 
-        self.distance_per_tick = 0.22
+        self.distance_per_tick = 0.70
         self.turn_right_next = True
 
         self.total_ticks_left = 0
