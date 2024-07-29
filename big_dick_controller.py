@@ -132,8 +132,8 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 10
-        self.LEFT_CRUISE_SPEED = 10
-        self.RIGHT_CRUISE_SPEED = 12
+        self.LEFT_CRUISE_SPEED = 5
+        self.RIGHT_CRUISE_SPEED = 8
         # In Centimeters
         self.WHEEL_RADIUS = 44
         self.cutting = 0
@@ -264,14 +264,14 @@ class RobotController:
 
     def send_speed(self, left_speed, right_speed):
         # v_d,v_i,d_d,d_i,s_d,s_i,cut
-        r_speed = abs(min(right_speed, 10))
+        r_speed = abs(min(right_speed, 8))
         r_dir = 1
         r_stop = 0
         if right_speed < 0:
             r_dir = 0
             r_stop = 1 if right_speed == 0 else 0
 
-        l_speed = abs(min(left_speed, 10))
+        l_speed = abs(min(left_speed, 5))
         l_dir = 1
         l_stop = 0
         if left_speed < 0:
