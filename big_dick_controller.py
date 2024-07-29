@@ -245,9 +245,9 @@ class RobotController:
         if deviation > self.angle_error_margin:
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.LEFT_CRUISE_SPEED, 0)
+                self.send_speed(self.LEFT_CRUISE_SPEED + 2, 0)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(0, self.RIGHT_CRUISE_SPEED)
+                self.send_speed(0, self.RIGHT_CRUISE_SPEED + 2)
         return deviation
 
     def forward(self):
