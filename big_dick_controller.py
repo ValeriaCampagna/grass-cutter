@@ -398,7 +398,7 @@ def map_state(controller: RobotController):
         # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
         if button == (0, -1):
             # I add 10 Cm to the width because it seems to fall short most times.
-            controller.workspace_width = controller.get_tracked_distance() + 10
+            controller.workspace_width = controller.get_tracked_distance()
             controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
             m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
             print(m)
@@ -448,6 +448,7 @@ def homing_state(controller: RobotController):
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
+    print("Current angle deviatio: ", controller.get_angle_deviation())
     controller.cutting = True
 
     # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
