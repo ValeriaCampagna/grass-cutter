@@ -150,7 +150,7 @@ class RobotController:
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
         self.angle_delta = 0
-        self.angle_error_margin = 1
+        self.angle_error_margin = 0.5
 
         self.distance_per_tick = 0.70
         self.turn_right_next = True
@@ -381,6 +381,7 @@ def map_state(controller: RobotController):
         # 2 == Y button; pressing this means use stored mapping
         if button == 2 and not controller.mapping:
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
+            print(f"Saved dimensions: width = {controller.workspace_width} | height = {controller.workspace_height}")
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
                 controller.change_state(boost_state)
