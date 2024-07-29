@@ -268,14 +268,14 @@ class RobotController:
         r_speed = abs(min(right_speed, 6))
         r_dir = 1
         r_stop = 0
-        if right_speed < 0:
+        if right_speed <= 0:
             r_dir = 0
             r_stop = 1 if right_speed == 0 else 0
 
         l_speed = abs(min(left_speed, 5))
         l_dir = 1
         l_stop = 0
-        if left_speed < 0:
+        if left_speed <= 0:
             r_dir = 0
             r_stop = 1 if left_speed == 0 else 0
 
