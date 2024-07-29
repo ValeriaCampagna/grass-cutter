@@ -247,7 +247,7 @@ class RobotController:
             if self.sensor_data["angle"] > self.target_angle:
                 self.send_speed(self.TURNING_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(0, self.TURNING_SPEED - 15)
+                self.send_speed(0, self.TURNING_SPEED)
         return deviation
 
     def forward(self):
@@ -356,6 +356,7 @@ def init_state(controller: RobotController):
 
 
 def manual_state(controller: RobotController):
+    print("Angle:", controller.sensor_data["angle"])
     return
 
 
