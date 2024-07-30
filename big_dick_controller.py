@@ -150,7 +150,7 @@ class RobotController:
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
         self.angle_delta = 0
-        self.angle_error_margin = 1
+        self.angle_error_margin = 0.5
 
         self.distance_per_tick = 0.70
         self.turn_right_next = True
@@ -385,7 +385,7 @@ def map_state(controller: RobotController):
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             print(f"Saved dimensions: width = {controller.workspace_width} | height = {controller.workspace_height}")
             if not (controller.workspace_width == controller.workspace_height == 0):
-                controller.required_turns = 1 + (controller.workspace_width // controller.WHEEL_RADIUS)
+                controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
                 controller.change_state(boost_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
@@ -402,7 +402,7 @@ def map_state(controller: RobotController):
         if button == (0, -1):
             # I add 10 Cm to the width because it seems to fall short most times.
             controller.workspace_width = controller.get_tracked_distance()
-            controller.required_turns = 1 + (controller.workspace_width // controller.WHEEL_RADIUS)
+            controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
             m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
             logging.info(m)
             controller.reset_encoders()
