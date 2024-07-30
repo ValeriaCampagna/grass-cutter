@@ -282,7 +282,7 @@ class RobotController:
             l_dir = 0
             l_stop = 1 if left_speed == 0 else 0
 
-        cutter = int(self.cutting)
+        cutter = 0 # int(self.cutting)
         # right wheel, left_wheel
         command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
         logging.info(f"Speed Message: {command}",)
