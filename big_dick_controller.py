@@ -385,7 +385,7 @@ def map_state(controller: RobotController):
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             print(f"Saved dimensions: width = {controller.workspace_width} | height = {controller.workspace_height}")
             if not (controller.workspace_width == controller.workspace_height == 0):
-                controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
+                controller.required_turns = 1 + (controller.workspace_width // controller.WHEEL_RADIUS)
                 controller.change_state(boost_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
@@ -402,9 +402,8 @@ def map_state(controller: RobotController):
         if button == (0, -1):
             # I add 10 Cm to the width because it seems to fall short most times.
             controller.workspace_width = controller.get_tracked_distance()
-            controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
+            controller.required_turns = 1 + (controller.workspace_width // controller.WHEEL_RADIUS)
             m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
-            print(m)
             logging.info(m)
             controller.reset_encoders()
             # Turn right one last time
@@ -451,7 +450,6 @@ def homing_state(controller: RobotController):
 
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
-    print("Current angle deviatio: ", controller.get_angle_deviation())
     controller.cutting = True
 
     # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
@@ -505,10 +503,9 @@ def boosting_protocol_turning(controller: RobotController, increase: int | float
 
 
 def turn_state(controller: RobotController):
-    controller.cutting = True
+    # controller.cutting = True
     deviation = controller.u_turn()
-    tracked_distance = controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
-    print("turning distance: ", int(tracked_distance))
+    # tracked_distance = controller.get_tracked_distance() # controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
         if controller.mapping:
