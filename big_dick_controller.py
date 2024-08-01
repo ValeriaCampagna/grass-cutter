@@ -63,8 +63,6 @@ class ObstacleDetectionRoutine:
             self.current_stage(controller)
 
     def _axis_turn(self, controller: 'RobotController'):
-        # if controller.get_tracked_distance() < 10:
-        #     boosting_protocol_turning(self.controller, 0.5, 10, 255)
         deviation = controller.axis_turn()
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
@@ -91,8 +89,6 @@ class ObstacleDetectionRoutine:
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        if controller.get_tracked_distance() < 4:
-            boosting_protocol(self.controller, 0.3, 4, 220)
         # decide which ultrasound to use
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
@@ -107,8 +103,6 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_3(self, controller: 'RobotController'):
-        if controller.get_tracked_distance() < 4:
-            boosting_protocol(self.controller, 0.3, 4, 220)
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
         if controller.get_tracked_distance() > 20:
@@ -136,6 +130,7 @@ class RobotController:
         self.RIGHT_CRUISE_SPEED = 11
         # In Centimeters
         self.WHEEL_RADIUS = 44
+        self.CUTTER_DIAMETER = 12
         self.cutting = 0
 
         # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
@@ -151,6 +146,8 @@ class RobotController:
         self.target_angle = 0
         self.angle_delta = 0
         self.angle_error_margin = 0.5
+        self.turning = False
+        self.still_turning = False
 
         self.distance_per_tick = 0.70
         self.turn_right_next = True
@@ -385,7 +382,7 @@ def map_state(controller: RobotController):
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
             print(f"Saved dimensions: width = {controller.workspace_width} | height = {controller.workspace_height}")
             if not (controller.workspace_width == controller.workspace_height == 0):
-                controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
+                controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
                 controller.change_state(boost_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
@@ -402,7 +399,7 @@ def map_state(controller: RobotController):
         if button == (0, -1):
             # I add 10 Cm to the width because it seems to fall short most times.
             controller.workspace_width = controller.get_tracked_distance()
-            controller.required_turns = controller.workspace_width // controller.WHEEL_RADIUS
+            controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
             m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
             logging.info(m)
             controller.reset_encoders()
@@ -456,9 +453,9 @@ def cruise_state(controller: RobotController):
     if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
-    offset = 15
     # If we reach the intended distance change to turn state
-    if (distance := controller.get_tracked_distance()) >= controller.workspace_height:
+    objective_distance = controller.CUTTER_DIAMETER if controller.still_turning else controller.workspace_height
+    if (distance := controller.get_tracked_distance()) >= objective_distance:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
         if controller.required_turns <= controller.number_of_turns:
@@ -469,13 +466,8 @@ def cruise_state(controller: RobotController):
             return
 
         controller.reset_encoders()
-        if controller.turn_right_next:
-            controller.target_angle = -180
-            controller.turn_right_next = False
-        else:
-            controller.target_angle = 0
-            controller.turn_right_next = True
         controller.change_state(turn_state)
+
     elif 0: #controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
         turns_left = controller.required_turns - controller.number_of_turns
         controller.reset_encoders()
@@ -484,27 +476,31 @@ def cruise_state(controller: RobotController):
         controller.forward()
 
 
-# TODO: Delete this
-def boosting_protocol_turning(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
-    if controller.cached_speeds == (0, 0):
-        controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
-        controller.TURNING_SPEED = 180
-    tracked_distance = controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
-
-    if tracked_distance < boost_distance:
-        controller.TURNING_SPEED = min(limit, controller.TURNING_SPEED + increase)
-        print(f"Turn Current Speed: {controller.TURNING_SPEED}")
-        return False
-    else:
-        cache = controller.cached_speeds
-        controller.TURNING_SPEED = cache[0]
-        controller.cached_speeds = (0, 0)
-        return True
-
+# # TODO: Delete this
+# def boosting_protocol_turning(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
+#     if controller.cached_speeds == (0, 0):
+#         controller.cached_speeds = (controller.TURNING_SPEED, controller.TURNING_SPEED)
+#         controller.TURNING_SPEED = 180
+#     tracked_distance = controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
+#
+#     if tracked_distance < boost_distance:
+#         controller.TURNING_SPEED = min(limit, controller.TURNING_SPEED + increase)
+#         print(f"Turn Current Speed: {controller.TURNING_SPEED}")
+#         return False
+#     else:
+#         cache = controller.cached_speeds
+#         controller.TURNING_SPEED = cache[0]
+#         controller.cached_speeds = (0, 0)
+#         return True
+#
 
 def turn_state(controller: RobotController):
-    # controller.cutting = True
-    deviation = controller.u_turn()
+    # controller.cutting = True if not (controller.mapping or controller.homing) else False
+    if not controller.turning:
+        controller.target_angle += -90 if controller.turn_right_next else 90
+    controller.turning = True
+
+    deviation = controller.axis_turn()
     # tracked_distance = controller.get_tracked_distance() # controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
@@ -513,10 +509,20 @@ def turn_state(controller: RobotController):
         elif controller.homing:
             controller.change_state(homing_state)
         else:
-            logging.info(controller.state_history)
-            controller.number_of_turns += 1
-            # TODO: Adjust state was used here
+            if controller.target_angle == -180:
+                controller.turn_right_next = False
+                controller.still_turning = False
+                controller.number_of_turns += 1
+            elif controller.target_angle == 0:
+                controller.turn_right_next = True
+                controller.still_turning = False
+                controller.number_of_turns += 1
+            else:
+                controller.still_turning = True
+            controller.turning = False
+
             controller.change_state(cruise_state)
+
     # elif int(tracked_distance) < 60:
     #     increase = 0.5
     #     if controller.cached_speeds == (0, 0):
@@ -549,24 +555,25 @@ def adjust_state(controller: RobotController):
         controller.change_state(boost_state)
 
 
-def boosting_protocol(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
-    if controller.cached_speeds == (0, 0):
-        controller.distance_after_encoder_reset = controller.get_tracked_distance()
-        controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
-    print("Boost distance: ", controller.get_tracked_distance(), controller.sensor_data["left_encoder"])
-    if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < boost_distance:
-        controller.LEFT_CRUISE_SPEED = min(limit, controller.LEFT_CRUISE_SPEED + increase)
-        controller.RIGHT_CRUISE_SPEED = min(limit, controller.RIGHT_CRUISE_SPEED + increase)
-        print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
-              f"| R = {controller.RIGHT_CRUISE_SPEED}")
-        return False
-    else:
-        cache = controller.cached_speeds
-        controller.LEFT_CRUISE_SPEED = cache[0]
-        controller.RIGHT_CRUISE_SPEED = cache[1]
-        controller.distance_after_encoder_reset = 0
-        controller.cached_speeds = (0, 0)
-        return True
+# TODO: delete this
+# def boosting_protocol(controller: RobotController, increase: int | float, boost_distance: int, limit: int):
+#     if controller.cached_speeds == (0, 0):
+#         controller.distance_after_encoder_reset = controller.get_tracked_distance()
+#         controller.cached_speeds = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+#     print("Boost distance: ", controller.get_tracked_distance(), controller.sensor_data["left_encoder"])
+#     if (t := (controller.get_tracked_distance() - controller.distance_after_encoder_reset)) < boost_distance:
+#         controller.LEFT_CRUISE_SPEED = min(limit, controller.LEFT_CRUISE_SPEED + increase)
+#         controller.RIGHT_CRUISE_SPEED = min(limit, controller.RIGHT_CRUISE_SPEED + increase)
+#         print(f"Boost Current Speeds: L = {controller.LEFT_CRUISE_SPEED} "
+#               f"| R = {controller.RIGHT_CRUISE_SPEED}")
+#         return False
+#     else:
+#         cache = controller.cached_speeds
+#         controller.LEFT_CRUISE_SPEED = cache[0]
+#         controller.RIGHT_CRUISE_SPEED = cache[1]
+#         controller.distance_after_encoder_reset = 0
+#         controller.cached_speeds = (0, 0)
+#         return True
 
 
 def boost_state(controller: RobotController):
@@ -580,7 +587,7 @@ def boost_state(controller: RobotController):
 def end_state(controller: RobotController):
     controller.halt()
     print("########Done########")
-    print("Total width covered:", controller.number_of_turns * controller.WHEEL_RADIUS)
+    print("Total width covered:", controller.number_of_turns * controller.CUTTER_DIAMETER)
     exit(0)
 
 
