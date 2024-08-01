@@ -497,7 +497,7 @@ def cruise_state(controller: RobotController):
 
 def turn_state(controller: RobotController):
     # controller.cutting = True if not (controller.mapping or controller.homing) else False
-    if not controller.turning:
+    if not controller.turning and not (controller.mapping or controller.homing):
         controller.target_angle += -90 if controller.turn_right_next else 90
         print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and still turning {controller.still_turning}")
     controller.turning = True
