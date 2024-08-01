@@ -125,7 +125,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 10
+        self.TURNING_SPEED = 15
         self.LEFT_CRUISE_SPEED = 10
         self.RIGHT_CRUISE_SPEED = 11
         # In Centimeters
@@ -231,9 +231,9 @@ class RobotController:
         deviation = self.get_angle_deviation()
         if deviation > self.angle_error_margin:
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
+                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED - 1)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
+                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED + 1)
         return deviation
 
     def u_turn(self):
@@ -497,6 +497,7 @@ def turn_state(controller: RobotController):
     # controller.cutting = True if not (controller.mapping or controller.homing) else False
     if not controller.turning:
         controller.target_angle += -90 if controller.turn_right_next else 90
+        print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and still turning {controller.still_turning}")
     controller.turning = True
 
     deviation = controller.axis_turn()
