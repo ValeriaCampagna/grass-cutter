@@ -127,7 +127,8 @@ class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 15
         self.LEFT_CRUISE_SPEED = 10
-        self.RIGHT_CRUISE_SPEED = 11
+        self.RIGHT_CRUISE_SPEED = 10
+
         # In Centimeters
         self.WHEEL_RADIUS = 44
         self.CUTTER_DIAMETER = 12
