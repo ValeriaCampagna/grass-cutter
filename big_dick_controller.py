@@ -499,8 +499,9 @@ def turn_state(controller: RobotController):
     # controller.cutting = True if not (controller.mapping or controller.homing) else False
     if not controller.turning and not (controller.mapping or controller.homing):
         controller.target_angle += -90 if controller.turn_right_next else 90
-        print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and still turning {controller.still_turning}")
+        print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and target angle {controller.target_angle}")
     controller.turning = True
+    print(f"Current angle {controller.sensor_data['angle']}")
 
     deviation = controller.axis_turn()
     # tracked_distance = controller.get_tracked_distance() # controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
