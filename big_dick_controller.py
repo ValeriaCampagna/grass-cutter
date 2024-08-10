@@ -131,7 +131,7 @@ class RobotController:
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
-        self.CUTTER_DIAMETER = 12
+        self.CUTTER_DIAMETER = 15
         self.cutting = 0
 
         # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
@@ -497,11 +497,10 @@ def cruise_state(controller: RobotController):
 
 def turn_state(controller: RobotController):
     # controller.cutting = True if not (controller.mapping or controller.homing) else False
-    if not controller.turning and not (controller.mapping or controller.homing):
+    if not controller.turning and not (controller.mapping or controller.homing or controller.state_history[-2] == "homing_state"):
         controller.target_angle += -90 if controller.turn_right_next else 90
         print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and target angle {controller.target_angle}")
     controller.turning = True
-    print(f"Current angle {controller.sensor_data['angle']}")
 
     deviation = controller.axis_turn()
     # tracked_distance = controller.get_tracked_distance() # controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
