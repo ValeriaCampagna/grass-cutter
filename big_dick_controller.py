@@ -451,7 +451,7 @@ def homing_state(controller: RobotController):
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
     controller.cutting = True
-    # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
+
     if controller.angle_delta == 0 and "homing_state" in controller.state_history:
         print("Resetting Angle")
         controller.target_angle = 0
