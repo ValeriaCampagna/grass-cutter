@@ -140,7 +140,7 @@ class RobotController:
         time.sleep(2)
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
 
-        self.current_state = init_state
+        self.change_state(init_state)
         self.state_history = []
         self.sensor_data: dict = {"front_ultrasound_1": 0, "front_ultrasound_2": 0,
                                   "right_ultrasound": 0, "left_ultrasound": 0}
@@ -453,7 +453,7 @@ def cruise_state(controller: RobotController):
     controller.cutting = True
 
     # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
-    if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[5] == "homing_state":
+    if controller.angle_delta == 0 and len(controller.state_history) >= 5 and controller.state_history[5] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
     # If we reach the intended distance change to turn state
