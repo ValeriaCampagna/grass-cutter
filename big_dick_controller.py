@@ -372,7 +372,30 @@ def map_state(controller: RobotController):
         if button == 0:
             controller.mapping = True
 
-        # Assuming square is 3
+        if controller.mapping:
+            # Once we start turning it MUST mean we reached a corner
+            if button == (1, 0):
+                # 13 == right d-pad, 14 == left d-pad
+                controller.workspace_height = controller.get_tracked_distance()
+                controller.reset_encoders()
+                controller.target_angle = -90
+                controller.change_state(turn_state)
+
+            # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
+            if button == (0, -1):
+                # I add 10 Cm to the width because it seems to fall short most times.
+                controller.workspace_width = controller.get_tracked_distance()
+                controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
+                m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
+                logging.info(m)
+                controller.reset_encoders()
+                # Turn right one last time
+                controller.target_angle = -180
+                controller.mapping = False
+                controller.homing = True
+                _save_mapped_dimensions(controller.workspace_width, controller.workspace_height)
+                controller.change_state(turn_state)
+
         if controller.mapping is False and button == 3:
             controller.change_state(manual_state)
             return
@@ -381,35 +404,14 @@ def map_state(controller: RobotController):
         # 2 == Y button; pressing this means use stored mapping
         if button == 2 and not controller.mapping:
             controller.workspace_width, controller.workspace_height = _load_saved_dimensions()
-            print(f"Saved dimensions: width = {controller.workspace_width} | height = {controller.workspace_height}")
+            m = f"Saved dimensions: width = {controller.workspace_width} | height = {controller.workspace_height}"
+            print(m)
+            logging.info(m)
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
                 controller.change_state(boost_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
-
-        # Once we start turning it MUST mean we reached a corner
-        if button == (1, 0):
-            # 13 == right d-pad, 14 == left d-pad
-            controller.workspace_height = controller.get_tracked_distance()
-            controller.reset_encoders()
-            controller.target_angle = -90
-            controller.change_state(turn_state)
-
-        # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
-        if button == (0, -1):
-            # I add 10 Cm to the width because it seems to fall short most times.
-            controller.workspace_width = controller.get_tracked_distance()
-            controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
-            m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
-            logging.info(m)
-            controller.reset_encoders()
-            # Turn right one last time
-            controller.target_angle = -180
-            controller.mapping = False
-            controller.homing = True
-            _save_mapped_dimensions(controller.workspace_width, controller.workspace_height)
-            controller.change_state(turn_state)
 
 
 dimensions_file = "saved_work_area_dimensions.txt"
@@ -451,7 +453,7 @@ def cruise_state(controller: RobotController):
     controller.cutting = True
 
     # TODO: THIS shit might not be good at detecting whether we mapped or just started cutting
-    if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[4] == "homing_state":
+    if controller.angle_delta == 0 and len(controller.state_history) >= 4 and controller.state_history[5] == "homing_state":
         controller.target_angle = 0
         controller.reset_angle()
     # If we reach the intended distance change to turn state
