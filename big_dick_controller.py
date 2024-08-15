@@ -140,8 +140,9 @@ class RobotController:
         time.sleep(2)
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
 
-        self.change_state(init_state)
         self.state_history = []
+        self.change_state(init_state)
+
         self.sensor_data: dict = {"front_ultrasound_1": 0, "front_ultrasound_2": 0,
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
