@@ -514,6 +514,10 @@ def turn_state(controller: RobotController):
         elif controller.homing:
             controller.change_state(homing_state)
         else:
+            controller.turning = False
+            if controller.state_history[-2] == "homing_state":
+                controller.change_state(cruise_state)
+
             if controller.target_angle == -180:
                 controller.turn_right_next = False
                 controller.still_turning = False
@@ -524,8 +528,6 @@ def turn_state(controller: RobotController):
                 controller.number_of_turns += 1
             else:
                 controller.still_turning = True
-            controller.turning = False
-
             controller.change_state(cruise_state)
 
     # elif int(tracked_distance) < 60:
