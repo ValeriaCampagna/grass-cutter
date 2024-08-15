@@ -319,7 +319,7 @@ class RobotController:
 
     def reset_encoders(self):
         self.send_speed(0, 0)
-        time.sleep(1)
+        # time.sleep(0.5)
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
         logging.info(f"Total Encoder Ticks: L {self.total_ticks_left} | R {self.total_ticks_right}")
