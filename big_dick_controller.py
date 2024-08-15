@@ -517,6 +517,7 @@ def turn_state(controller: RobotController):
             controller.turning = False
             if controller.state_history[-2] == "homing_state":
                 controller.change_state(cruise_state)
+                return
 
             if controller.target_angle == -180:
                 controller.turn_right_next = False
