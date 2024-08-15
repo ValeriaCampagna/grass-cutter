@@ -298,9 +298,9 @@ class RobotController:
         angle, right_encoder, left_encoder = angle_data_list
         # print("Angle: ", angle)
         self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
-        self.sensor_data["left_encoder"] = dis if (dis := (abs(float(left_encoder)) - self.total_ticks_left)) >= 0 else 0
+        self.sensor_data["left_encoder"] = abs(float(left_encoder)) - self.total_ticks_left
         self.sensor_data["left_encoder_raw"] = abs(float(left_encoder))
-        self.sensor_data["right_encoder"] = dis if (dis := (abs(float(right_encoder)) - self.total_ticks_right)) >= 0 else 0
+        self.sensor_data["right_encoder"] = abs(float(right_encoder)) - self.total_ticks_right
         self.sensor_data["right_encoder_raw"] = abs(float(right_encoder))
 
     def read_ultrasound_data(self):
@@ -319,7 +319,7 @@ class RobotController:
 
     def reset_encoders(self):
         self.send_speed(0, 0)
-        time.sleep(0.5)
+        time.sleep(1)
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
         logging.info(f"Total Encoder Ticks: L {self.total_ticks_left} | R {self.total_ticks_right}")
@@ -444,8 +444,6 @@ def homing_state(controller: RobotController):
             controller.homing_turns += 1
             controller.reset_encoders()
             controller.homing = False
-            # This is to off-set the last turn we take before going into cruise mode
-            controller.number_of_turns = -1
             controller.change_state(turn_state)
 
 
