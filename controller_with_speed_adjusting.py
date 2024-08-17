@@ -210,11 +210,14 @@ class RobotController:
             self.r_total_ticks_up_to_current_interval = r_encoder
             diff = abs(self.r_ticks_current_interval - self.l_ticks_current_interval)
             # The number we compare the diff against is the distance (CM) the right wheel is allowed to drift
-            if diff >= 4:
+            # 7 ticks is about 5 cm
+            lower_bound = round(self.LEFT_CRUISE_SPEED * 0.66)
+            upper_bound = self.LEFT_CRUISE_SPEED + round(self.LEFT_CRUISE_SPEED * 0.2)
+            if diff >= 7:
                 if self.r_ticks_current_interval > self.l_ticks_current_interval:
-                    self.RIGHT_CRUISE_SPEED -= self.right_speed_adjust_amount
+                    self.RIGHT_CRUISE_SPEED = max(lower_bound, self.RIGHT_CRUISE_SPEED - self.right_speed_adjust_amount)
                 else:
-                    self.RIGHT_CRUISE_SPEED += self.right_speed_adjust_amount
+                    self.RIGHT_CRUISE_SPEED = min(upper_bound, self.RIGHT_CRUISE_SPEED + self.right_speed_adjust_amount)
                 m = (f"Left ticks {self.l_ticks_current_interval} | Right ticks {self.r_ticks_current_interval} "
                      f"| Adjust right speed to {self.RIGHT_CRUISE_SPEED}")
                 logging.info(m)
