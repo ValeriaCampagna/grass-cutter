@@ -125,9 +125,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 20
-        self.LEFT_CRUISE_SPEED = 22
-        self.RIGHT_CRUISE_SPEED = 22
+        self.TURNING_SPEED = 8 #20
+        self.LEFT_CRUISE_SPEED = 8 #22
+        self.RIGHT_CRUISE_SPEED = 8 #22
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
@@ -148,6 +148,7 @@ class RobotController:
         self.target_angle = 0
         self.angle_delta = 0
         self.angle_error_margin = 1
+        self.adjusting_angle = False
         self.turning = False
         self.still_turning = False
 
@@ -197,9 +198,10 @@ class RobotController:
     def adjust_right_wheel_speed(self):
         if self.current_state.__name__ not in ["cruise_state", "map_state"]:
             return
-        self.read_angle_data()
+
         current_time = time.time()
-        if (current_time - self.last_update_time) >= 0.5 and self.sensor_data != {}:  # Update every 1 second
+        if (current_time - self.last_update_time) >= 0.5 and self.sensor_data != {}:  # Update every 0.5 second
+            self.read_angle_data()
             l_encoder = self.sensor_data["left_encoder"]
             r_encoder = self.sensor_data["right_encoder"]
 
@@ -213,7 +215,8 @@ class RobotController:
             # 7 ticks is about 5 cm
             lower_bound = round(self.LEFT_CRUISE_SPEED * 0.66)
             upper_bound = self.LEFT_CRUISE_SPEED + round(self.LEFT_CRUISE_SPEED * 0.2)
-            if diff >= 7:
+            # If the angle is getting adjusted we don't want to meddle with the speed
+            if diff >= 7 and not self.adjusting_angle:
                 if self.r_ticks_current_interval > self.l_ticks_current_interval:
                     self.RIGHT_CRUISE_SPEED = max(lower_bound, self.RIGHT_CRUISE_SPEED - self.right_speed_adjust_amount)
                 else:
@@ -308,12 +311,14 @@ class RobotController:
         # logging.info(f"FORWARD: Target Angle: {self.target_angle} | "
         #              f"Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
         if deviation > self.angle_error_margin:
+            self.adjusting_angle = True
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
                 self.send_speed(self.LEFT_CRUISE_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
                 self.send_speed(0, self.RIGHT_CRUISE_SPEED)
         else:
+            self.adjusting_angle = False
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
         return deviation
 
@@ -533,14 +538,14 @@ def cruise_state(controller: RobotController):
 
 
 def turn_state(controller: RobotController):
-    # controller.cutting = True if not (controller.mapping or controller.homing) else False
+    # TODO: Change this so that the map and homing states don't manually set their angle but just relay on this
+    #  it should work since we are only ever turning right.
     if not controller.turning and not (controller.mapping or controller.homing or controller.state_history[-2] == "homing_state"):
         controller.target_angle += -90 if controller.turn_right_next else 90
         print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and target angle {controller.target_angle}")
     controller.turning = True
 
     deviation = controller.axis_turn()
-    # tracked_distance = controller.get_tracked_distance() # controller.get_tracked_distance_right() if controller.turn_right_next else controller.get_tracked_distance()
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
         if controller.mapping:
