@@ -195,7 +195,7 @@ class RobotController:
         self._controller_input()
 
     def adjust_right_wheel_speed(self):
-        if self.current_state.__name__ != "cruise_state":
+        if self.current_state.__name__ not in ["cruise_state", "map_state"]:
             return
         self.read_angle_data()
         current_time = time.time()
