@@ -372,6 +372,8 @@ class RobotController:
         self.read_angle_data()
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
+        self.r_total_ticks_up_to_current_interval = 0
+        self.l_total_ticks_up_to_current_interval = 0
         logging.info(f"Total Encoder Ticks: L {self.total_ticks_left} | R {self.total_ticks_right}")
 
     def reset_angle(self):
