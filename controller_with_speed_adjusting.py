@@ -190,16 +190,16 @@ class RobotController:
 
     def update(self):
         self.read_angle_data()
-        self.adjust_right_wheel_speed()
         self.current_state(self)
+        self.adjust_right_wheel_speed()
         self._controller_input()
 
     def adjust_right_wheel_speed(self):
         if self.current_state.__name__ != "cruise_state":
             return
-
+        self.read_angle_data()
         current_time = time.time()
-        if (current_time - self.last_update_time) >= 1 and self.sensor_data != {}:  # Update every 1 second
+        if (current_time - self.last_update_time) >= 0.5 and self.sensor_data != {}:  # Update every 1 second
             l_encoder = self.sensor_data["left_encoder"]
             r_encoder = self.sensor_data["right_encoder"]
 
@@ -209,7 +209,8 @@ class RobotController:
             self.r_ticks_current_interval = r_encoder - self.r_total_ticks_up_to_current_interval
             self.r_total_ticks_up_to_current_interval = r_encoder
             diff = abs(self.r_ticks_current_interval - self.l_ticks_current_interval)
-            if diff >= 8:
+            # The number we compare the diff with is the distance the right wheel is allowed to drift
+            if diff >= 3:
                 if self.r_ticks_current_interval > self.l_ticks_current_interval:
                     self.RIGHT_CRUISE_SPEED -= self.right_speed_adjust_amount
                 else:
