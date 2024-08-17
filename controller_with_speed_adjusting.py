@@ -209,8 +209,8 @@ class RobotController:
             self.r_ticks_current_interval = r_encoder - self.r_total_ticks_up_to_current_interval
             self.r_total_ticks_up_to_current_interval = r_encoder
             diff = abs(self.r_ticks_current_interval - self.l_ticks_current_interval)
-            # The number we compare the diff with is the distance the right wheel is allowed to drift
-            if diff >= 3:
+            # The number we compare the diff against is the distance (CM) the right wheel is allowed to drift
+            if diff >= 4:
                 if self.r_ticks_current_interval > self.l_ticks_current_interval:
                     self.RIGHT_CRUISE_SPEED -= self.right_speed_adjust_amount
                 else:
