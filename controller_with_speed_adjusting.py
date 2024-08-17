@@ -266,7 +266,7 @@ class RobotController:
                     self.send_speed(0, 0)
 
     def _adjust_right_wheel_speed(self):
-        self.right_speed_adjust_amount = round(self.RIGHT_CRUISE_SPEED * 0.2)
+        self.right_speed_adjust_amount = round(self.LEFT_CRUISE_SPEED * 0.1)
 
     def change_state(self, new_state):
         state_name = new_state.__name__ if hasattr(new_state, "__name__") else type(new_state).__name__
@@ -406,7 +406,6 @@ def init_state(controller: RobotController):
 
 
 def manual_state(controller: RobotController):
-    print("Angle:", controller.sensor_data["angle"])
     return
 
 
