@@ -148,6 +148,7 @@ class RobotController:
         self.target_angle = 0
         self.angle_delta = 0
         self.angle_error_margin = 1
+        self.cached_turning_speed = 0
         self.adjusting_angle = False
         self.turning = False
         self.still_turning = False
@@ -167,10 +168,6 @@ class RobotController:
         self.homing_turns = 0
         self.homing = False
         self.mapping = False
-
-        self.boost_increase = 0
-        self.cached_speeds = (0, 0)
-        self.distance_after_encoder_reset = 0
 
         # self.stop_event = threading.Event()
         # self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
@@ -546,14 +543,23 @@ def turn_state(controller: RobotController):
     controller.turning = True
 
     deviation = controller.axis_turn()
+    if deviation <= 10 and controller.cached_turning_speed == 0:
+        ts = controller.TURNING_SPEED
+        controller.cached_turning_speed = ts
+        # TODO: Run tests to see if this works. It should decrease turning speed 20% when are about to reach the desired angle
+        controller.TURNING_SPEED = ts - round(ts * 0.2)
+
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
+        controller.TURNING_SPEED = controller.cached_turning_speed
+        controller.cached_turning_speed = 0
         if controller.mapping:
             controller.change_state(map_state)
         elif controller.homing:
             controller.change_state(homing_state)
         else:
             controller.turning = False
+            # If just finished homing go to cruise without setting still turning to True
             if controller.state_history[-2] == "homing_state":
                 controller.change_state(cruise_state)
                 return
