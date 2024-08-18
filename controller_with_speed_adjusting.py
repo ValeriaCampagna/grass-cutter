@@ -213,7 +213,7 @@ class RobotController:
             lower_bound = round(self.LEFT_CRUISE_SPEED * 0.66)
             upper_bound = self.LEFT_CRUISE_SPEED + round(self.LEFT_CRUISE_SPEED * 0.2)
             # If the angle is getting adjusted we don't want to meddle with the speed
-            if diff >= 7 and not self.adjusting_angle:
+            if diff >= 7: # and not self.adjusting_angle:
                 if self.r_ticks_current_interval > self.l_ticks_current_interval:
                     self.RIGHT_CRUISE_SPEED = max(lower_bound, self.RIGHT_CRUISE_SPEED - self.right_speed_adjust_amount)
                 else:
@@ -286,9 +286,9 @@ class RobotController:
         deviation = self.get_angle_deviation()
         if deviation > self.angle_error_margin:
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
+                self.send_speed(self.TURNING_SPEED - 1, -self.TURNING_SPEED)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
+                self.send_speed(-self.TURNING_SPEED + 1, self.TURNING_SPEED)
         return deviation
 
     def u_turn(self):
@@ -308,14 +308,14 @@ class RobotController:
         # logging.info(f"FORWARD: Target Angle: {self.target_angle} | "
         #              f"Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
         if deviation > self.angle_error_margin:
-            self.adjusting_angle = True
+            # self.adjusting_angle = True
             # IF angle is positive stop right wheel and increase left wheel speed
             if self.sensor_data["angle"] > self.target_angle:
                 self.send_speed(self.LEFT_CRUISE_SPEED, 0)
             elif self.sensor_data["angle"] < self.target_angle:
                 self.send_speed(0, self.RIGHT_CRUISE_SPEED)
         else:
-            self.adjusting_angle = False
+            # self.adjusting_angle = False
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
         return deviation
 
