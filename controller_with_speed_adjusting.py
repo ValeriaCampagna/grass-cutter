@@ -286,9 +286,9 @@ class RobotController:
         deviation = self.get_angle_deviation()
         if deviation > self.angle_error_margin:
             if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED - 1, -self.TURNING_SPEED)
+                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
             elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-self.TURNING_SPEED + 1, self.TURNING_SPEED)
+                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
         return deviation
 
     def u_turn(self):
@@ -543,7 +543,7 @@ def turn_state(controller: RobotController):
     controller.turning = True
 
     deviation = controller.axis_turn()
-    if deviation <= 10 and controller.cached_turning_speed == 0:
+    if deviation <= 15 and controller.cached_turning_speed == 0:
         ts = controller.TURNING_SPEED
         controller.cached_turning_speed = ts
         # TODO: Run tests to see if this works. It should decrease turning speed 20% when are about to reach the desired angle
