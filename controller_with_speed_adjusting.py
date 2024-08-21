@@ -51,13 +51,12 @@ class ObstacleDetectionRoutine:
             self.controller = controller
             self.controller.cutting = False
 
-        if self.done:
-            controller.change_state(cruise_state)
-            return
-
         if self.turning:
             print("Axis turn")
             self._axis_turn(controller)
+        elif self.done:
+            controller.change_state(cruise_state)
+            return
         else:
             print("current stage", self.current_stage.__name__)
             self.current_stage(controller)
@@ -92,7 +91,7 @@ class ObstacleDetectionRoutine:
         # decide which ultrasound to use
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
-        print(f"Stage 1 ultrasound: {'left' if self.direction == -1 else 'right'} {ultrasound}")
+        # I had to change this because the side ultrasounds were not behaving as expected
         if controller.get_tracked_distance() > 20:
             self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
@@ -105,6 +104,8 @@ class ObstacleDetectionRoutine:
     def _stage_3(self, controller: 'RobotController'):
         ultrasound = controller.sensor_data["left_ultrasound"] \
             if self.direction == -1 else controller.sensor_data["right_ultrasound"]
+        # TODO: Same as above, this is stupid since it does not depend on the size of the obstacle. I need to
+        #  change this back to using _obstacle_passed() and test the behaviour
         if controller.get_tracked_distance() > 20:
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
             controller.target_angle += -self.direction * 90
