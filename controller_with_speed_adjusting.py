@@ -447,6 +447,7 @@ def map_state(controller: RobotController):
                 controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
                 m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
                 logging.info(m)
+                print(m)
                 controller.reset_encoders()
                 # Turn right one last time
                 controller.target_angle = -180
