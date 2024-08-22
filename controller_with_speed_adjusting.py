@@ -126,9 +126,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 22
-        self.LEFT_CRUISE_SPEED = 22
-        self.RIGHT_CRUISE_SPEED = 22
+        self.TURNING_SPEED = 26
+        self.LEFT_CRUISE_SPEED = 26
+        self.RIGHT_CRUISE_SPEED = 26
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
@@ -375,7 +375,7 @@ class RobotController:
 
     def reset_encoders(self):
         self.send_speed(0, 0)
-        time.sleep(0.5)
+        time.sleep(1)
         self.read_angle_data()
         self.total_ticks_left = self.sensor_data["left_encoder_raw"]
         self.total_ticks_right = self.sensor_data["right_encoder_raw"]
@@ -520,7 +520,7 @@ def cruise_state(controller: RobotController):
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
         if controller.required_turns <= controller.number_of_turns:
-            if distance >= (controller.workspace_height + 45):
+            if distance >= (controller.workspace_height):
                 controller.change_state(end_state)
                 return
             controller.forward()
