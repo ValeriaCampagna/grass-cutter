@@ -311,8 +311,10 @@ class RobotController:
         if deviation > self.angle_error_margin:
             # self.adjusting_angle = True
             if real_angle > self.target_angle:
+                print("Turning left, angle:", real_angle)
                 self.send_speed(0, self.RIGHT_CRUISE_SPEED)
             elif real_angle < self.target_angle:
+                print("Turning right, angle:", real_angle)
                 self.send_speed(self.LEFT_CRUISE_SPEED, 0)
         else:
             # self.adjusting_angle = False
