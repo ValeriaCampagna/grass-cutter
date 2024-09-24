@@ -147,7 +147,6 @@ class RobotController:
         self.sensor_data: dict = {"front_ultrasound_1": 0, "front_ultrasound_2": 0,
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
-        self.angle_delta = 0
         self.angle_error_margin = 1
         self.cached_turning_speed = 0
         self.adjusting_angle = False
@@ -281,41 +280,40 @@ class RobotController:
         self.current_state = new_state
 
     def get_angle_deviation(self):
-        return abs(abs(self.sensor_data["angle"]) - abs(self.target_angle))
+        real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
+        return abs(real_angle - self.target_angle)
 
     def axis_turn(self):
         deviation = self.get_angle_deviation()
         if deviation > self.angle_error_margin:
             offset = round(self.TURNING_SPEED * 0.15)
-            if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED + offset)
-            elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED - offset)
+            if self.turn_right_next:
+                self.send_speed(self.TURNING_SPEED, -(self.TURNING_SPEED + offset))
+            else:
+                self.send_speed(-(self.TURNING_SPEED + offset), self.TURNING_SPEED)
         return deviation
 
-    def u_turn(self):
-        deviation = self.get_angle_deviation()
-        logging.info(
-            f"U_TURN Target Angle: {self.target_angle} | Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
-        if deviation > self.angle_error_margin:
-            # IF angle is positive stop right wheel and increase left wheel speed
-            if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.LEFT_CRUISE_SPEED + 2, 0)
-            elif self.sensor_data["angle"] < self.target_angle:
-                self.send_speed(0, self.RIGHT_CRUISE_SPEED + 2)
-        return deviation
+    # def u_turn(self):
+    #     deviation = self.get_angle_deviation()
+    #     logging.info(
+    #         f"U_TURN Target Angle: {self.target_angle} | Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
+    #     if deviation > self.angle_error_margin:
+    #         # IF angle is positive stop right wheel and increase left wheel speed
+    #         if self.sensor_data["angle"] > self.target_angle:
+    #             self.send_speed(self.LEFT_CRUISE_SPEED + 2, 0)
+    #         elif self.sensor_data["angle"] < self.target_angle:
+    #             self.send_speed(0, self.RIGHT_CRUISE_SPEED + 2)
+    #     return deviation
 
     def forward(self):
         deviation = self.get_angle_deviation()
-        # logging.info(f"FORWARD: Target Angle: {self.target_angle} | "
-        #              f"Real Angle: {self.sensor_data['angle']} | Deviation: {deviation}")
+        real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
         if deviation > self.angle_error_margin:
             # self.adjusting_angle = True
-            # IF angle is positive stop right wheel and increase left wheel speed
-            if self.sensor_data["angle"] > self.target_angle:
-                self.send_speed(self.LEFT_CRUISE_SPEED, 0)
-            elif self.sensor_data["angle"] < self.target_angle:
+            if real_angle > self.target_angle:
                 self.send_speed(0, self.RIGHT_CRUISE_SPEED)
+            elif real_angle < self.target_angle:
+                self.send_speed(self.LEFT_CRUISE_SPEED, 0)
         else:
             # self.adjusting_angle = False
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
@@ -353,7 +351,7 @@ class RobotController:
 
         angle, right_encoder, left_encoder = angle_data_list
         # print("Angle: ", angle)
-        self.sensor_data["angle"] = round(float(angle) - self.angle_delta)
+        self.sensor_data["angle"] = round(float(angle))
         self.sensor_data["left_encoder"] = abs(float(left_encoder)) - self.total_ticks_left
         self.sensor_data["left_encoder_raw"] = abs(float(left_encoder))
         self.sensor_data["right_encoder"] = abs(float(right_encoder)) - self.total_ticks_right
@@ -382,9 +380,6 @@ class RobotController:
         self.r_total_ticks_up_to_current_interval = 0
         self.l_total_ticks_up_to_current_interval = 0
         logging.info(f"Total Encoder Ticks: L {self.total_ticks_left} | R {self.total_ticks_right}")
-
-    def reset_angle(self):
-        self.angle_delta = self.sensor_data["angle"]
 
     def get_tracked_distance(self):
         covered_distance = round(self.distance_per_tick * self.sensor_data["left_encoder"], 2)
@@ -437,7 +432,6 @@ def map_state(controller: RobotController):
                 # 13 == right d-pad, 14 == left d-pad
                 controller.workspace_height = controller.get_tracked_distance()
                 controller.reset_encoders()
-                controller.target_angle = -90
                 controller.change_state(turn_state)
 
             # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
@@ -450,7 +444,6 @@ def map_state(controller: RobotController):
                 print(m)
                 controller.reset_encoders()
                 # Turn right one last time
-                controller.target_angle = -180
                 controller.mapping = False
                 controller.homing = True
                 _save_mapped_dimensions(controller.workspace_width, controller.workspace_height)
@@ -493,13 +486,11 @@ def homing_state(controller: RobotController):
     controller.forward()
     if controller.homing_turns == 0:
         if controller.get_tracked_distance() >= controller.workspace_height:
-            controller.target_angle = -270
             controller.homing_turns += 1
             controller.reset_encoders()
             controller.change_state(turn_state)
     elif controller.homing_turns == 1:
         if controller.get_tracked_distance() >= controller.workspace_width:
-            controller.target_angle = -360
             controller.homing_turns += 1
             controller.reset_encoders()
             controller.homing = False
@@ -510,17 +501,13 @@ def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
     controller.cutting = True
 
-    if controller.angle_delta == 0 and "homing_state" in controller.state_history:
-        print("Resetting Angle")
-        controller.target_angle = 0
-        controller.reset_angle()
     # If we reach the intended distance change to turn state
     objective_distance = controller.CUTTER_DIAMETER if controller.still_turning else controller.workspace_height
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
         if controller.required_turns <= controller.number_of_turns:
-            if distance >= (controller.workspace_height):
+            if distance >= controller.workspace_height:
                 controller.change_state(end_state)
                 return
             controller.forward()
@@ -538,11 +525,9 @@ def cruise_state(controller: RobotController):
 
 
 def turn_state(controller: RobotController):
-    # TODO: Change this so that the map and homing states don't manually set their angle but just relay on this
-    #  it should work since we are only ever turning right.
-    if not controller.turning and not (controller.mapping or controller.homing or controller.state_history[-2] == "homing_state"):
+    if not controller.turning:
         controller.target_angle += -90 if controller.turn_right_next else 90
-        print(f"Turning {'Right' if controller.turn_right_next else 'Left'} and target angle {controller.target_angle}")
+        controller.target_angle = 0 if 0 > controller.target_angle or controller.target_angle >= 360 else controller.target_angle
     controller.turning = True
 
     deviation = controller.axis_turn()
@@ -567,7 +552,7 @@ def turn_state(controller: RobotController):
                 controller.change_state(cruise_state)
                 return
 
-            if controller.target_angle == -180:
+            if controller.target_angle == 180:
                 controller.turn_right_next = False
                 controller.still_turning = False
                 controller.number_of_turns += 1
