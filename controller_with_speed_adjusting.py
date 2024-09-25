@@ -1,6 +1,8 @@
 import os
 import time
 import logging
+from datetime import datetime
+
 import serial
 import pygame
 import threading
@@ -558,14 +560,17 @@ def turn_state(controller: RobotController):
 cache_angle_error_margin = None
 correct_readings_count = 0
 cached_turning_speed = 0
+last_check = 0
 def adjust_state(controller: RobotController):
-    global cache_angle_error_margin, correct_readings_count, cached_turning_speed
+    global cache_angle_error_margin, correct_readings_count, \
+        cached_turning_speed, last_check
 
     if cache_angle_error_margin is None:
         cache_angle_error_margin = controller.angle_error_margin
         cached_turning_speed = controller.TURNING_SPEED
+        last_check = time.time()
         controller.angle_error_margin = 0
-        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.7)
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.8)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
@@ -573,6 +578,8 @@ def adjust_state(controller: RobotController):
     if deviation == 0:
         correct_readings_count += 1
     else:
+        if (time.time() - last_check) > 0.2:
+            controller.TURNING_SPEED = controller.TURNING_SPEED - round(cached_turning_speed * 0.10)
         correct_readings_count = 0
 
     if correct_readings_count == 5:
