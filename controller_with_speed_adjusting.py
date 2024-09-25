@@ -285,12 +285,16 @@ class RobotController:
 
     def axis_turn(self):
         deviation = self.get_angle_deviation()
+        real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
         if deviation > self.angle_error_margin:
             offset = round(self.TURNING_SPEED * 0.15)
-            if self.turn_right_next:
-                self.send_speed(self.TURNING_SPEED, -(self.TURNING_SPEED + offset))
-            else:
-                self.send_speed(-(self.TURNING_SPEED + offset), self.TURNING_SPEED)
+            if real_angle > self.target_angle:
+                if self.target_angle == 0 and real_angle > 180:
+                    self.send_speed(self.LEFT_CRUISE_SPEED, 0)
+                else:
+                    self.send_speed(0, self.RIGHT_CRUISE_SPEED)
+            elif real_angle < self.target_angle:
+                self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
         return deviation
 
     # def u_turn(self):
