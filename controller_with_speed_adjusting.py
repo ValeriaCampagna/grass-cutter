@@ -560,6 +560,8 @@ def adjust_state(controller: RobotController):
         controller.angle_error_margin = 0
 
     deviation = controller.axis_turn()
+    real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
+    print(f"target: {controller.target_angle} | current: {real_angle}")
     if deviation == 0:
         time.sleep(1)
         controller.reset_encoders()
