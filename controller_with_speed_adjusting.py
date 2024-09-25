@@ -307,6 +307,7 @@ class RobotController:
 
     def forward(self):
         deviation = self.get_angle_deviation()
+        # TODO: Try picking to 360 instead of 0
         real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
         if deviation > self.angle_error_margin:
             # self.adjusting_angle = True
@@ -532,7 +533,8 @@ def cruise_state(controller: RobotController):
 
 def turn_state(controller: RobotController):
     if not controller.turning:
-        controller.target_angle += -90 if controller.turn_right_next else 90
+        print("turning", "right" if controller.turn_right_next else "left")
+        controller.target_angle += 90 if controller.turn_right_next else -90
         controller.target_angle = 0 if 0 > controller.target_angle or controller.target_angle >= 360 else controller.target_angle
     controller.turning = True
 
