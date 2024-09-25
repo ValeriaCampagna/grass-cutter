@@ -317,13 +317,13 @@ class RobotController:
             if real_angle > self.target_angle:
                 if self.target_angle == 0 and real_angle > 180:
                     print("Target is 0 and angle is over 180 turning right, angle:", real_angle)
-                    self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.6))
+                    self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.4))
                 else:
                     print("Turning left, angle:", real_angle)
-                    self.send_speed(int(self.LEFT_CRUISE_SPEED * 0.6), self.RIGHT_CRUISE_SPEED)
+                    self.send_speed(int(self.LEFT_CRUISE_SPEED * 0.4), self.RIGHT_CRUISE_SPEED)
             elif real_angle < self.target_angle:
                 print("Turning right, angle:", real_angle)
-                self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.6))
+                self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.4))
         else:
             # self.adjusting_angle = False
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
@@ -565,7 +565,7 @@ def adjust_state(controller: RobotController):
         cache_angle_error_margin = controller.angle_error_margin
         cached_turning_speed = controller.TURNING_SPEED
         controller.angle_error_margin = 0
-        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.6)
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.8)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
