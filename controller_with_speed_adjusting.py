@@ -578,7 +578,7 @@ def adjust_state(controller: RobotController):
     if deviation == 0:
         correct_readings_count += 1
     else:
-        if (time.time() - last_check) >= 1:
+        if (time.time() - last_check) >= 2:
             last_check = time.time()
             controller.TURNING_SPEED = max(round(cached_turning_speed * 0.5), controller.TURNING_SPEED - int(cached_turning_speed * 0.10))
             print("Current turning speed: ", controller.TURNING_SPEED)
