@@ -290,9 +290,9 @@ class RobotController:
             offset = round(self.TURNING_SPEED * 0.15)
             if real_angle > self.target_angle:
                 if self.target_angle == 0 and real_angle > 180:
-                    self.send_speed(self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
+                    self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
                 else:
-                    self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
+                    self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
             elif real_angle < self.target_angle:
                 self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
         return deviation
@@ -317,13 +317,13 @@ class RobotController:
             if real_angle > self.target_angle:
                 if self.target_angle == 0 and real_angle > 180:
                     print("Target is 0 and angle is over 180 turning right, angle:", real_angle)
-                    self.send_speed(self.LEFT_CRUISE_SPEED, 0)
+                    self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.6))
                 else:
                     print("Turning left, angle:", real_angle)
-                    self.send_speed(0, self.RIGHT_CRUISE_SPEED)
+                    self.send_speed(int(self.LEFT_CRUISE_SPEED * 0.6), self.RIGHT_CRUISE_SPEED)
             elif real_angle < self.target_angle:
                 print("Turning right, angle:", real_angle)
-                self.send_speed(self.LEFT_CRUISE_SPEED, 0)
+                self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.6))
         else:
             # self.adjusting_angle = False
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
@@ -557,12 +557,15 @@ def turn_state(controller: RobotController):
 
 cache_angle_error_margin = None
 correct_readings_count = 0
+cached_turning_speed = 0
 def adjust_state(controller: RobotController):
-    global cache_angle_error_margin, correct_readings_count
+    global cache_angle_error_margin, correct_readings_count, cached_turning_speed
 
     if cache_angle_error_margin is None:
         cache_angle_error_margin = controller.angle_error_margin
+        cached_turning_speed = controller.TURNING_SPEED
         controller.angle_error_margin = 0
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.6)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
@@ -576,6 +579,7 @@ def adjust_state(controller: RobotController):
         time.sleep(1)
         controller.reset_encoders()
         controller.angle_error_margin = cache_angle_error_margin
+        controller.TURNING_SPEED = cached_turning_speed
         correct_readings_count = 0
         cache_angle_error_margin = None
         if controller.mapping:
