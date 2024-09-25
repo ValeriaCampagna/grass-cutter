@@ -556,8 +556,9 @@ def turn_state(controller: RobotController):
 
 
 cache_angle_error_margin = None
+correct_readings_count = 0
 def adjust_state(controller: RobotController):
-    global cache_angle_error_margin
+    global cache_angle_error_margin, correct_readings_count
 
     if cache_angle_error_margin is None:
         cache_angle_error_margin = controller.angle_error_margin
@@ -567,9 +568,15 @@ def adjust_state(controller: RobotController):
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
     print(f"target: {controller.target_angle} | current: {real_angle}")
     if deviation == 0:
+        correct_readings_count += 1
+    else:
+        correct_readings_count = 0
+
+    if correct_readings_count == 5:
         time.sleep(1)
         controller.reset_encoders()
         controller.angle_error_margin = cache_angle_error_margin
+        correct_readings_count = 0
         cache_angle_error_margin = None
         if controller.mapping:
             controller.change_state(map_state)
