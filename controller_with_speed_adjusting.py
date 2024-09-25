@@ -548,6 +548,23 @@ def turn_state(controller: RobotController):
         controller.reset_encoders()
         controller.TURNING_SPEED = controller.cached_turning_speed
         controller.cached_turning_speed = 0
+        controller.change_state(adjust_state)
+
+
+cache_angle_error_margin = None
+def adjust_state(controller: RobotController):
+    global cache_angle_error_margin
+
+    if cache_angle_error_margin is None:
+        cache_angle_error_margin = controller.angle_error_margin
+        controller.angle_error_margin = 0
+
+    deviation = controller.axis_turn()
+    if deviation == 0:
+        time.sleep(1)
+        controller.reset_encoders()
+        controller.angle_error_margin = cache_angle_error_margin
+        cache_angle_error_margin = None
         if controller.mapping:
             controller.change_state(map_state)
         elif controller.homing:
