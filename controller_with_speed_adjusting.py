@@ -290,9 +290,9 @@ class RobotController:
             offset = round(self.TURNING_SPEED * 0.15)
             if real_angle > self.target_angle:
                 if self.target_angle == 0 and real_angle > 180:
-                    self.send_speed(self.LEFT_CRUISE_SPEED, 0)
+                    self.send_speed(self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
                 else:
-                    self.send_speed(0, self.RIGHT_CRUISE_SPEED)
+                    self.send_speed(-self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
             elif real_angle < self.target_angle:
                 self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
         return deviation
