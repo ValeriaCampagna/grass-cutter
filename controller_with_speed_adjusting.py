@@ -128,7 +128,7 @@ class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 8
         self.LEFT_CRUISE_SPEED = 8
-        self.RIGHT_CRUISE_SPEED = 9
+        self.RIGHT_CRUISE_SPEED = 8
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
@@ -147,7 +147,7 @@ class RobotController:
         self.sensor_data: dict = {"front_ultrasound_1": 0, "front_ultrasound_2": 0,
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
-        self.angle_error_margin = 1
+        self.angle_error_margin = 0
         self.cached_turning_speed = 0
         self.adjusting_angle = False
         self.turning = False
@@ -189,7 +189,7 @@ class RobotController:
     def update(self):
         self.read_angle_data()
         self.current_state(self)
-        self.adjust_right_wheel_speed()
+        # self.adjust_right_wheel_speed()
         self._controller_input()
 
     def adjust_right_wheel_speed(self):
@@ -307,7 +307,6 @@ class RobotController:
 
     def forward(self):
         deviation = self.get_angle_deviation()
-        # TODO: Try picking to 360 instead of 0
         real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
         if deviation > self.angle_error_margin:
             # self.adjusting_angle = True
