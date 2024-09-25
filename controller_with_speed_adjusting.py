@@ -565,7 +565,7 @@ def adjust_state(controller: RobotController):
         cache_angle_error_margin = controller.angle_error_margin
         cached_turning_speed = controller.TURNING_SPEED
         controller.angle_error_margin = 0
-        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.8)
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.7)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
