@@ -563,7 +563,7 @@ cached_turning_speed = 0
 last_check = 0
 min_turning_speed = 0
 num_retries = 1
-max_num_retries = 4
+max_num_retries = 5
 def adjust_state(controller: RobotController):
     global cache_angle_error_margin, correct_readings_count, \
         cached_turning_speed, last_check, min_turning_speed, num_retries
@@ -571,6 +571,7 @@ def adjust_state(controller: RobotController):
     if cache_angle_error_margin is None:
         cache_angle_error_margin = controller.angle_error_margin
         cached_turning_speed = controller.TURNING_SPEED
+        controller = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.1)
         last_check = time.time()
         controller.angle_error_margin = 0
         min_turning_speed = round(cached_turning_speed * 0.5)
@@ -630,7 +631,7 @@ def adjust_state(controller: RobotController):
                 controller.number_of_turns += 1
             else:
                 controller.still_turning = True
-            print("back to cruise speeds are", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.required_turns, controller.number_of_turns)
+            print("back to cruise speeds are", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.required_turns, controller.number_of_turns, controller.sensor_data["angle"])
             controller.change_state(cruise_state)
 
 
