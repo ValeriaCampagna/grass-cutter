@@ -595,7 +595,9 @@ def adjust_state(controller: RobotController):
     # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
     if correct_readings_count == 0 and controller.TURNING_SPEED == min_turning_speed and num_retries <= max_num_retries:
         print("#"*4, "Min speed reached. Retrying adjustment with higher speed", "#"*4)
-        controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.05)
+        # controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.05)
+        min_turning_speed = min_turning_speed - (min_turning_speed * 0.1)
+        controller.TURNING_SPEED = cached_turning_speed
         num_retries += 1
 
     if correct_readings_count == 5:
