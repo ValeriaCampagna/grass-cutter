@@ -134,7 +134,7 @@ class RobotController:
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
-        self.CUTTER_DIAMETER = 25
+        self.CUTTER_DIAMETER = 30
         self.cutting = 0
 
         # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
