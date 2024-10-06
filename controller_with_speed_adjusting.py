@@ -313,7 +313,7 @@ class RobotController:
 
     def forward(self):
         deviation = self.get_angle_deviation()
-        real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
+        real_angle = 0 if (x:=self.sensor_data["angle"]) == [360, 359] else x
         if deviation > self.angle_error_margin:
             # self.adjusting_angle = True
             if real_angle > self.target_angle:
