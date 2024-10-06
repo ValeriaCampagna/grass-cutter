@@ -561,15 +561,19 @@ cache_angle_error_margin = None
 correct_readings_count = 0
 cached_turning_speed = 0
 last_check = 0
+min_turning_speed = 0
+num_retries = 1
+max_num_retries = 3
 def adjust_state(controller: RobotController):
     global cache_angle_error_margin, correct_readings_count, \
-        cached_turning_speed, last_check
+        cached_turning_speed, last_check, min_turning_speed, num_retries
 
     if cache_angle_error_margin is None:
         cache_angle_error_margin = controller.angle_error_margin
         cached_turning_speed = controller.TURNING_SPEED
         last_check = time.time()
         controller.angle_error_margin = 0
+        min_turning_speed = round(cached_turning_speed * 0.5)
         controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.8)
 
     deviation = controller.axis_turn()
@@ -580,9 +584,19 @@ def adjust_state(controller: RobotController):
     else:
         if (time.time() - last_check) >= 3:
             last_check = time.time()
-            controller.TURNING_SPEED = max(round(cached_turning_speed * 0.5), controller.TURNING_SPEED - int(cached_turning_speed * 0.10))
+            controller.TURNING_SPEED = max(min_turning_speed, controller.TURNING_SPEED - int(cached_turning_speed * 0.10))
             print("Current turning speed: ", controller.TURNING_SPEED)
         correct_readings_count = 0
+
+    if num_retries > max_num_retries:
+        print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed")
+        return
+
+    # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
+    if correct_readings_count == 0 and controller.TURNING_SPEED == min_turning_speed and num_retries <= max_num_retries:
+        print("#"*4, "Min speed reached. Retrying adjustment with higher speed", "#"*4)
+        controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.2)
+        num_retries += 1
 
     if correct_readings_count == 5:
         time.sleep(1)
@@ -590,7 +604,10 @@ def adjust_state(controller: RobotController):
         controller.angle_error_margin = cache_angle_error_margin
         controller.TURNING_SPEED = cached_turning_speed
         correct_readings_count = 0
+        num_retries = 1
+        min_turning_speed = 0
         cache_angle_error_margin = None
+
         if controller.mapping:
             controller.change_state(map_state)
         elif controller.homing:
