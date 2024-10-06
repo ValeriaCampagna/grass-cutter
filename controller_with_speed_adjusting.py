@@ -563,7 +563,7 @@ cached_turning_speed = 0
 last_check = 0
 min_turning_speed = 0
 num_retries = 1
-max_num_retries = 3
+max_num_retries = 4
 def adjust_state(controller: RobotController):
     global cache_angle_error_margin, correct_readings_count, \
         cached_turning_speed, last_check, min_turning_speed, num_retries
@@ -590,14 +590,13 @@ def adjust_state(controller: RobotController):
 
     if num_retries > max_num_retries:
         print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed")
-        return
 
     # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
     if correct_readings_count == 0 and controller.TURNING_SPEED == min_turning_speed and num_retries <= max_num_retries:
         print("#"*4, "Min speed reached. Retrying adjustment with higher speed", "#"*4)
         # controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.05)
         min_turning_speed = min_turning_speed - (min_turning_speed * 0.1)
-        controller.TURNING_SPEED = cached_turning_speed
+        #controller.TURNING_SPEED = cached_turning_speed
         num_retries += 1
 
     if correct_readings_count == 5:
