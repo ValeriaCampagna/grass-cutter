@@ -128,7 +128,7 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 26
+        self.TURNING_SPEED = 30
         self.LEFT_CRUISE_SPEED = 26
         self.RIGHT_CRUISE_SPEED = 26
 
@@ -595,7 +595,7 @@ def adjust_state(controller: RobotController):
     # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
     if correct_readings_count == 0 and controller.TURNING_SPEED == min_turning_speed and num_retries <= max_num_retries:
         print("#"*4, "Min speed reached. Retrying adjustment with higher speed", "#"*4)
-        controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.2)
+        controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.05)
         num_retries += 1
 
     if correct_readings_count == 5:
