@@ -134,7 +134,7 @@ class RobotController:
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
-        self.CUTTER_DIAMETER = 20
+        self.CUTTER_DIAMETER = 25
         self.cutting = 0
 
         # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
@@ -630,6 +630,7 @@ def adjust_state(controller: RobotController):
                 controller.number_of_turns += 1
             else:
                 controller.still_turning = True
+            print("back to cruise speeds are", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.required_turns, controller.number_of_turns)
             controller.change_state(cruise_state)
 
 
