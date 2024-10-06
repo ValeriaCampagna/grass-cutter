@@ -282,7 +282,7 @@ class RobotController:
         self.current_state = new_state
 
     def get_angle_deviation(self):
-        real_angle = 0 if (x:=self.sensor_data["angle"]) == 360 else x
+        real_angle = 0 if (x:=self.sensor_data["angle"]) in [360, 359] else x
         return abs(real_angle - self.target_angle)
 
     def axis_turn(self):
@@ -631,7 +631,7 @@ def adjust_state(controller: RobotController):
                 controller.number_of_turns += 1
             else:
                 controller.still_turning = True
-            print("back to cruise speeds are", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.required_turns, controller.number_of_turns, controller.sensor_data["angle"])
+            print("back to cruise, speeds are", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.angle_error_margin, controller.required_turns, controller.number_of_turns, controller.sensor_data["angle"])
             controller.change_state(cruise_state)
 
 
