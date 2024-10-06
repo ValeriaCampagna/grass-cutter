@@ -571,7 +571,7 @@ def adjust_state(controller: RobotController):
     if cache_angle_error_margin is None:
         cache_angle_error_margin = controller.angle_error_margin
         cached_turning_speed = controller.TURNING_SPEED
-        controller = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.1)
+        controller.TURNING_SPEED = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.1)
         last_check = time.time()
         controller.angle_error_margin = 0
         min_turning_speed = round(cached_turning_speed * 0.5)
