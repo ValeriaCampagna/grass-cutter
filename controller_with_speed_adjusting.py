@@ -581,7 +581,9 @@ def adjust_state(controller: RobotController):
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
-    print(f"target: {controller.target_angle} | current: {real_angle}")
+    m = f"target: {controller.target_angle} | current: {real_angle}"
+    print(m)
+    logging.info(m)
     if deviation == 0:
         correct_readings_count += 1
     else:
