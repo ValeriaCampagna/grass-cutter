@@ -517,7 +517,7 @@ def cruise_state(controller: RobotController):
     controller.cutting = True
 
     # If we reach the intended distance change to turn state
-    objective_distance = controller.CUTTER_DIAMETER if controller.still_turning else controller.workspace_height
+    objective_distance = controller.CUTTER_DIAMETER +10 if controller.still_turning else controller.workspace_height
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
