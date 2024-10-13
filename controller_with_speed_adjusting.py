@@ -134,7 +134,7 @@ class RobotController:
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
-        self.CUTTER_DIAMETER = 30
+        self.CUTTER_DIAMETER = 45
         self.cutting = 0
 
         # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
@@ -517,7 +517,7 @@ def cruise_state(controller: RobotController):
     controller.cutting = True
 
     # If we reach the intended distance change to turn state
-    objective_distance = controller.CUTTER_DIAMETER + 15 if controller.still_turning else controller.workspace_height
+    objective_distance = controller.CUTTER_DIAMETER if controller.still_turning else controller.workspace_height
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
@@ -581,7 +581,7 @@ def adjust_state(controller: RobotController):
         last_check = time.time()
         controller.angle_error_margin = 0
         min_turning_speed = round(cached_turning_speed * 0.4)
-        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.8)
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.85)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
