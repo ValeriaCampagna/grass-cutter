@@ -446,9 +446,8 @@ def map_state(controller: RobotController):
                 controller.reset_encoders()
                 controller.change_state(turn_state)
 
-            # Finish the mapping and save the dimensions. (0, 0) is d-pad bellow button
+            # Finish the mapping and save the dimensions. (0, -1) is d-pad bellow button
             if button == (0, -1):
-                # I add 10 Cm to the width because it seems to fall short most times.
                 controller.workspace_width = controller.get_tracked_distance()
                 controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
                 m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
@@ -541,6 +540,9 @@ def turn_state(controller: RobotController):
         print("turning", "right" if controller.turn_right_next else "left")
         controller.target_angle += 90 if controller.turn_right_next else -90
         controller.target_angle = 0 if 0 > controller.target_angle or controller.target_angle >= 360 else controller.target_angle
+        m = f"New target angle is {controller.target_angle}"
+        print(m)
+        logging.info(m)
     controller.turning = True
 
     deviation = controller.axis_turn()
@@ -617,7 +619,7 @@ def adjust_state(controller: RobotController):
         else:
             controller.turning = False
             # If just finished homing go to cruise without setting still turning to True
-            if controller.state_history[-2] == "homing_state":
+            if controller.state_history[-3] == "homing_state":
                 controller.change_state(cruise_state)
                 return
 
