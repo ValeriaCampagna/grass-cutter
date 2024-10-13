@@ -598,7 +598,8 @@ def adjust_state(controller: RobotController):
         correct_readings_count = 0
 
     if num_retries > max_num_retries:
-        print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed")
+        print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed, just go forward")
+        correct_readings_count = 5
 
     # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
     if correct_readings_count == 0 and controller.TURNING_SPEED == min_turning_speed and num_retries <= max_num_retries:
