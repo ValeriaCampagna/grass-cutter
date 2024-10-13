@@ -613,8 +613,10 @@ def adjust_state(controller: RobotController):
         cache_angle_error_margin = None
 
         if controller.mapping:
+            controller.turning = False
             controller.change_state(map_state)
         elif controller.homing:
+            controller.turning = False
             controller.change_state(homing_state)
         else:
             controller.turning = False
