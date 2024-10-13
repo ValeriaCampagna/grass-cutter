@@ -290,12 +290,16 @@ class RobotController:
         real_angle = 0 if (x:=self.sensor_data["angle"]) in [360, 359] else x
         if deviation > self.angle_error_margin:
             offset = round(self.TURNING_SPEED * 0.15)
+            print(f"TURNING: target is {self.target_angle} and real is {real_angle}", end=" | ")
             if real_angle > self.target_angle:
                 if self.target_angle == 0 and real_angle > 180:
+                    print("Turning left")
                     self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
                 else:
+                    print("Turning Right")
                     self.send_speed(-self.TURNING_SPEED, self.TURNING_SPEED)
             elif real_angle < self.target_angle:
+                print("Turning Left")
                 self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
         return deviation
 
