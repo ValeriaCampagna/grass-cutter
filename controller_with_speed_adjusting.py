@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from curses.ascii import controlnames
 from datetime import datetime
 
 import serial
@@ -72,12 +73,15 @@ class ObstacleDetectionRoutine:
         if result:
             self.adjusting = False
 
-    def _obstacle_passed(self, ultra_sound_value: int):
+    def _ticks_to_distance(self, ticks: int):
+        return self.controller.distance_per_tick * ticks
+
+    def _obstacle_passed(self, ultra_sound_value: int, tracked_distance: int):
         if len(self.ultrasound_sequence) > 0:
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
 
-            if self.ultrasound_sequence in [[0, 1], [0, 1, 0], [1, 0]]:
+            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
                 self.ultrasound_sequence = []
                 print("Obstacle passed")
                 return True
@@ -96,10 +100,8 @@ class ObstacleDetectionRoutine:
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        # TODO: need a way to decide which ultrasound to use
-        ultrasound = 0
-        # I had to change this because the side ultrasounds were not behaving as expected
-        if controller.get_tracked_distance() > 20:
+        ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
+        if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle -= 90 if not self.last_lane else -90
             self.current_stage = self._stage_3
@@ -109,11 +111,8 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_3(self, controller: 'RobotController'):
-        # TODO: Need a way to decide which ultrasound to check
-        ultrasound = 0
-        # TODO: Same as above, this is stupid since it does not depend on the size of the obstacle. I need to
-        #  change this back to using _obstacle_passed() and test the behaviour
-        if controller.get_tracked_distance() > 20:
+        ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
+        if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
             new_target = controller.target_angle - (90 if not self.last_lane else -90)
             if new_target < 0:
@@ -125,8 +124,7 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_4(self, controller: 'RobotController'):
-        # TODO: Stop using a hardcoded value of 20
-        if controller.get_tracked_distance() > 20:
+        if controller.get_tracked_distance() >= self._ticks_to_distance(self.ticks_after_clearing_obstacle):
             controller.total_ticks_left = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
             new_target = controller.target_angle + (90 if not self.last_lane else -90)
             if new_target == 360:
@@ -305,7 +303,7 @@ class RobotController:
             offset = round(self.TURNING_SPEED * 0.15)
             print(f"TURNING: target is {self.target_angle} and real is {real_angle}", end=" | ")
             if real_angle > self.target_angle:
-                if self.target_angle == 0 and real_angle > 180:
+                if self.target_angle == 0 and real_angle > 180 and not isinstance(self.current_state, ObstacleDetectionRoutine):
                     print("Turning left")
                     self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
                 else:
