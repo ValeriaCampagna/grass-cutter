@@ -55,6 +55,7 @@ class ObstacleDetectionRoutine:
         elif self.adjusting:
             self._adjusting(controller)
         elif self.done:
+            controller.total_ticks_left = self.ticks_before_avoiding_obstacle
             controller.change_state(cruise_state)
             return
         else:
@@ -80,7 +81,7 @@ class ObstacleDetectionRoutine:
         if len(self.ultrasound_sequence) > 0:
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
-
+            print("Sequence of ultrasound activations", self.ultrasound_sequence)
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
                 self.ultrasound_sequence = []
                 print("Obstacle passed")
@@ -102,11 +103,11 @@ class ObstacleDetectionRoutine:
     def _stage_2(self, controller: 'RobotController'):
         ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
-            self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
+            # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle -= 90 if not self.last_lane else -90
-            self.current_stage = self._stage_3
+            # self.current_stage = self._stage_3
             self.turning = True
-            controller.reset_encoders()
+            self.done = True
         else:
             controller.forward()
 
@@ -125,7 +126,7 @@ class ObstacleDetectionRoutine:
 
     def _stage_4(self, controller: 'RobotController'):
         if controller.get_tracked_distance() >= self._ticks_to_distance(self.ticks_after_clearing_obstacle):
-            controller.total_ticks_left = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
+            # controller.total_ticks_left = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
             new_target = controller.target_angle + (90 if not self.last_lane else -90)
             if new_target == 360:
                 new_target = 0
