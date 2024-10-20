@@ -426,7 +426,7 @@ class RobotController:
         self.ultrasound_thread.join()
         self.motor_ser.close()
         self.angle_ser.close()
-        # self.sonic_ser.close()
+        self.sonic_ser.close()
 
 
 def init_state(controller: RobotController):
