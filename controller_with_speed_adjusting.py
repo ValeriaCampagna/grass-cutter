@@ -55,7 +55,8 @@ class ObstacleDetectionRoutine:
         elif self.adjusting:
             self._adjusting(controller)
         elif self.done:
-            controller.total_ticks_left = controller.total_ticks_left - self.ticks_obstacle_length
+            controller.total_ticks_left = (controller.total_ticks_left - self.ticks_obstacle_length -
+                                           (self.controller.ROBOT_LENGHT // self.controller.distance_per_tick))
             controller.change_state(cruise_state)
             return
         else:
@@ -105,8 +106,9 @@ class ObstacleDetectionRoutine:
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle -= 90 if not self.last_lane else -90
-            self.current_stage = self._stage_3
+            controller.required_turns = max(0, controller.required_turns - 1)
             self.turning = True
+            self.done = True
         else:
             controller.forward()
 
@@ -114,9 +116,7 @@ class ObstacleDetectionRoutine:
         ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
-            controller.required_turns = max(0, controller.required_turns - 1)
             self.turning = True
-            self.done = True
         else:
             controller.forward()
 
@@ -142,6 +142,7 @@ class RobotController:
         # In Centimeters
         self.WHEEL_RADIUS = 44
         self.CUTTER_DIAMETER = 30
+        self.ROBOT_LENGHT = 54
         self.cutting = 0
 
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
