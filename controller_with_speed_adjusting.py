@@ -32,21 +32,16 @@ class ObstacleDetectionRoutine:
     def __init__(self, target_angle: int, remaining_turns: int):
         self.controller = None
         self.current_stage = self._stage_1
+        # TODO: Might have to check if more than 1 is left since there robot is so long
+        self.last_lane = remaining_turns <= 1
         self.turning = False
+        self.adjusting = False
         self.tracked_distance = 0
         self.ticks_before_avoiding_obstacle = 0
         self.ticks_after_clearing_obstacle = 0
         self.ticks_obstacle_length = 0
         self.ultrasound_sequence = []
         self.done = False
-        # TODO: This might need to be more than 1 lane since the robot is soo long
-        if remaining_turns > 1:
-            # if target angle is 0 turn direction is -1 so turn right
-            # else turn left
-            self.direction = -1 if target_angle == 0 else 1
-        else:
-            # if less 1 or not turns remain we must turn in the opposite direction
-            self.direction = 1 if target_angle != 0 else -1
 
     def __call__(self, controller: 'RobotController'):
         if self.controller is None:
@@ -56,6 +51,8 @@ class ObstacleDetectionRoutine:
         if self.turning:
             print("Axis turn")
             self._axis_turn(controller)
+        elif self.adjusting:
+            self._adjusting(controller)
         elif self.done:
             controller.change_state(cruise_state)
             return
@@ -68,6 +65,12 @@ class ObstacleDetectionRoutine:
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
             self.turning = False
+            self.adjusting = True
+
+    def _adjusting(self, controller: 'RobotController'):
+        result = bool(adjust_state(controller))
+        if result:
+            self.adjusting = False
 
     def _obstacle_passed(self, ultra_sound_value: int):
         if len(self.ultrasound_sequence) > 0:
@@ -85,18 +88,20 @@ class ObstacleDetectionRoutine:
 
     def _stage_1(self, controller: 'RobotController'):
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
-        controller.target_angle += self.direction * 90
+        new_target = controller.target_angle + 90 if not self.last_lane else -90
+        if new_target < 0:
+            new_target = 270
+        controller.target_angle = new_target
         self.current_stage = self._stage_2
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
-        # decide which ultrasound to use
-        ultrasound = controller.sensor_data["left_ultrasound"] \
-            if self.direction == -1 else controller.sensor_data["right_ultrasound"]
+        # TODO: need a way to decide which ultrasound to use
+        ultrasound = 0
         # I had to change this because the side ultrasounds were not behaving as expected
         if controller.get_tracked_distance() > 20:
             self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
-            controller.target_angle += -self.direction * 90
+            controller.target_angle -= 90 if not self.last_lane else -90
             self.current_stage = self._stage_3
             self.turning = True
             controller.reset_encoders()
@@ -104,22 +109,29 @@ class ObstacleDetectionRoutine:
             controller.forward()
 
     def _stage_3(self, controller: 'RobotController'):
-        ultrasound = controller.sensor_data["left_ultrasound"] \
-            if self.direction == -1 else controller.sensor_data["right_ultrasound"]
+        # TODO: Need a way to decide which ultrasound to check
+        ultrasound = 0
         # TODO: Same as above, this is stupid since it does not depend on the size of the obstacle. I need to
         #  change this back to using _obstacle_passed() and test the behaviour
         if controller.get_tracked_distance() > 20:
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
-            controller.target_angle += -self.direction * 90
+            new_target = controller.target_angle - (90 if not self.last_lane else -90)
+            if new_target < 0:
+                new_target = 270
+            controller.target_angle = new_target
             self.current_stage = self._stage_4
             self.turning = True
         else:
             controller.forward()
 
     def _stage_4(self, controller: 'RobotController'):
+        # TODO: Stop using a hardcoded value of 20
         if controller.get_tracked_distance() > 20:
             controller.total_ticks_left = self.ticks_before_avoiding_obstacle - self.ticks_obstacle_length
-            controller.target_angle += self.direction * 90
+            new_target = controller.target_angle + (90 if not self.last_lane else -90)
+            if new_target == 360:
+                new_target = 0
+            controller.target_angle = new_target
             self.turning = True
             self.done = True
         else:
@@ -171,6 +183,7 @@ class RobotController:
         self.homing = False
         self.mapping = False
 
+        # Check the ultra sounds in separate thread
         # self.stop_event = threading.Event()
         # self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
         # self.ultrasound_thread.start()
@@ -351,7 +364,7 @@ class RobotController:
             l_dir = 0
             l_stop = 1 if left_speed == 0 else 0
 
-        cutter = int(self.cutting)
+        cutter = 0# int(self.cutting)
         # right wheel, left_wheel
         command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
         logging.info(f"Speed Message: {command}",)
@@ -531,7 +544,7 @@ def cruise_state(controller: RobotController):
         controller.reset_encoders()
         controller.change_state(turn_state)
 
-    elif 0: #controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+    elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
         turns_left = controller.required_turns - controller.number_of_turns
         controller.reset_encoders()
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
@@ -625,6 +638,8 @@ def adjust_state(controller: RobotController):
         elif controller.homing:
             controller.turning = False
             controller.change_state(homing_state)
+        elif isinstance(controller.current_state, ObstacleDetectionRoutine):
+            return True
         else:
             controller.turning = False
             # If just finished homing go to cruise without setting still turning to True
