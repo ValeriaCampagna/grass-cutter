@@ -55,7 +55,7 @@ class ObstacleDetectionRoutine:
         elif self.adjusting:
             self._adjusting(controller)
         elif self.done:
-            controller.total_ticks_left = self.ticks_before_avoiding_obstacle
+            controller.total_ticks_left = controller.total_ticks_left - self.ticks_obstacle_length
             controller.change_state(cruise_state)
             return
         else:
@@ -105,9 +105,8 @@ class ObstacleDetectionRoutine:
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle -= 90 if not self.last_lane else -90
-            # self.current_stage = self._stage_3
+            self.current_stage = self._stage_3
             self.turning = True
-            self.done = True
         else:
             controller.forward()
 
@@ -115,12 +114,9 @@ class ObstacleDetectionRoutine:
         ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             self.ticks_obstacle_length = controller.sensor_data["left_encoder"]
-            new_target = controller.target_angle - (90 if not self.last_lane else -90)
-            if new_target < 0:
-                new_target = 270
-            controller.target_angle = new_target
-            self.current_stage = self._stage_4
+            controller.required_turns = max(0, controller.required_turns - 1)
             self.turning = True
+            self.done = True
         else:
             controller.forward()
 
