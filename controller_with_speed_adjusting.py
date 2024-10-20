@@ -263,6 +263,7 @@ class RobotController:
                 return
 
             # MANUAL MODE
+            name = self.current_state.__name__ if hasattr(self.current_state, "__name__") else type(self.current_state).__name__
             if self.current_state.__name__ == "manual_state":
                 pygame.event.pump()
                 if button == (1, 0):
@@ -540,7 +541,7 @@ def cruise_state(controller: RobotController):
         controller.reset_encoders()
         controller.change_state(turn_state)
 
-    elif controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+    elif (not controller.still_turning) and controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
         turns_left = controller.required_turns - controller.number_of_turns
         controller.reset_encoders()
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
@@ -612,7 +613,7 @@ def adjust_state(controller: RobotController):
 
     # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
     if correct_readings_count == 0 and controller.TURNING_SPEED == min_turning_speed and num_retries <= max_num_retries:
-        print("#"*4, "Min speed reached. Retrying adjustment with higher speed", "#"*4)
+        print("#"*4, "Min speed reached. Retrying adjustment with lower min speed", "#"*4)
         # controller.TURNING_SPEED = cached_turning_speed + ((num_retries * cached_turning_speed) * 0.05)
         min_turning_speed = min_turning_speed - (min_turning_speed * 0.1)
         #controller.TURNING_SPEED = cached_turning_speed
