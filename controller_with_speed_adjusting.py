@@ -149,8 +149,8 @@ class RobotController:
         self.CUTTER_DIAMETER = 45
         self.cutting = 0
 
-        # self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
-        # time.sleep(3)
+        self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
+        time.sleep(3)
         self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
         time.sleep(2)
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
@@ -184,9 +184,9 @@ class RobotController:
         self.mapping = False
 
         # Check the ultra sounds in separate thread
-        # self.stop_event = threading.Event()
-        # self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
-        # self.ultrasound_thread.start()
+        self.stop_event = threading.Event()
+        self.ultrasound_thread = threading.Thread(target=self.read_ultrasound_data, daemon=True)
+        self.ultrasound_thread.start()
 
         # PID Variables
         self.right_speed_adjust_amount = 0
@@ -422,8 +422,8 @@ class RobotController:
         print("Exiting Program")
         self.cutting = False
         self.send_speed(0, 0)
-        #self.stop_event.set()
-        # self.ultrasound_thread.join()
+        self.stop_event.set()
+        self.ultrasound_thread.join()
         self.motor_ser.close()
         self.angle_ser.close()
         # self.sonic_ser.close()
