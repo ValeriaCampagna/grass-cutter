@@ -173,6 +173,7 @@ class RobotController:
         # In centimeters
         self.workspace_height = 0
         self.workspace_width = 0
+        self.remnant_width = 0
         self.required_turns = 0
 
         self.homing_turns = 0
@@ -463,7 +464,10 @@ def map_state(controller: RobotController):
             # Finish the mapping and save the dimensions. (0, -1) is d-pad bellow button
             if button == (0, -1):
                 controller.workspace_width = controller.get_tracked_distance()
+                controller.remnant_width = round(controller.workspace_width % controller.CUTTER_DIAMETER)
                 controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
+                if controller.remnant_width >= controller.CUTTER_DIAMETER * 0.5:
+                    controller.required_turns += 1
                 m = f"Width {controller.workspace_width}, Height {controller.workspace_height}"
                 logging.info(m)
                 print(m)
@@ -486,7 +490,10 @@ def map_state(controller: RobotController):
             print(m)
             logging.info(m)
             if not (controller.workspace_width == controller.workspace_height == 0):
+                controller.remnant_width = round(controller.workspace_width % controller.CUTTER_DIAMETER)
                 controller.required_turns = controller.workspace_width // controller.CUTTER_DIAMETER
+                if controller.remnant_width >= controller.CUTTER_DIAMETER * 0.5:
+                    controller.required_turns += 1
                 controller.change_state(cruise_state)
             else:
                 print("######### NO AREA DIMENSIONS ARE STORED. YOU MUST MAP THE AREA #########")
@@ -525,9 +532,11 @@ def homing_state(controller: RobotController):
 def cruise_state(controller: RobotController):
     logging.info(f"distance: {controller.get_tracked_distance()}")
     controller.cutting = True
-
+    turns_left = controller.required_turns - controller.number_of_turns
     # If we reach the intended distance change to turn state
-    objective_distance = controller.CUTTER_DIAMETER +10 if controller.still_turning else controller.workspace_height
+    objective_distance = controller.CUTTER_DIAMETER if controller.still_turning else controller.workspace_height
+    if turns_left == 1 and controller.still_turning:
+        objective_distance += controller.remnant_width
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
@@ -542,7 +551,6 @@ def cruise_state(controller: RobotController):
         controller.change_state(turn_state)
 
     elif (not controller.still_turning) and controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
-        turns_left = controller.required_turns - controller.number_of_turns
         controller.reset_encoders()
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
