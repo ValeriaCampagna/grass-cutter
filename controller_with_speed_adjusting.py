@@ -303,7 +303,7 @@ class RobotController:
             offset = round(self.TURNING_SPEED * 0.15)
             print(f"TURNING: target is {self.target_angle} and real is {real_angle}", end=" | ")
             if real_angle > self.target_angle:
-                if self.target_angle == 0 and real_angle > 180 and not isinstance(self.current_state, ObstacleDetectionRoutine):
+                if self.target_angle == 0 and real_angle > 180:
                     print("Turning left")
                     self.send_speed(self.TURNING_SPEED, -self.TURNING_SPEED)
                 else:
