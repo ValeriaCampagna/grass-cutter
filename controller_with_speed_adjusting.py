@@ -143,7 +143,7 @@ class RobotController:
         self.WHEEL_RADIUS = 44
         self.CUTTER_DIAMETER = 30
         self.ROBOT_LENGHT = 54
-        self.cutting = 1
+        self.cutting = 0
 
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
         time.sleep(3)
@@ -362,7 +362,7 @@ class RobotController:
             l_dir = 0
             l_stop = 1 if left_speed == 0 else 0
 
-        cutter = 0# int(self.cutting)
+        cutter = int(self.cutting)
         # right wheel, left_wheel
         command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
         logging.info(f"Speed Message: {command}",)
