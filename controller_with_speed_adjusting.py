@@ -105,6 +105,7 @@ class ObstacleDetectionRoutine:
         ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
+            print("Is last lane", self.last_lane)
             controller.target_angle += -90 if (not self.last_lane) and controller.target_angle == 270 else 90
             if controller.target_angle == 360:
                 controller.target_angle = 0
