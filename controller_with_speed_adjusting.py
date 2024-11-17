@@ -559,7 +559,7 @@ def cruise_state(controller: RobotController):
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
-        if controller.required_turns <= controller.number_of_turns:
+        if turns_left <= 0:
             if distance >= controller.workspace_height:
                 controller.change_state(end_state)
                 return
@@ -570,6 +570,9 @@ def cruise_state(controller: RobotController):
         controller.change_state(turn_state)
 
     elif (not controller.still_turning) and controller.sensor_data["front_ultrasound_1"] or controller.sensor_data["front_ultrasound_2"]:
+        if turns_left <= 0:
+            controller.change_state(end_state)
+            return
         controller.reset_encoders()
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
