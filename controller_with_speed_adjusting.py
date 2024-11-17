@@ -34,7 +34,7 @@ class ObstacleDetectionRoutine:
         self.controller = None
         self.current_stage = self._stage_1
         # TODO: Might have to check if more than 1 is left since there robot is so long
-        self.last_lane = remaining_turns <= 1
+        self.last_lane = remaining_turns < 1
         self.turning = False
         self.adjusting = False
         self.tracked_distance = 0
@@ -106,7 +106,7 @@ class ObstacleDetectionRoutine:
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle += -90 if (not self.last_lane) and controller.target_angle == 270 else 90
-            if controller.target_angle >= 360:
+            if controller.target_angle == 360:
                 controller.target_angle = 0
 
             controller.required_turns = max(0, controller.required_turns - 1)
