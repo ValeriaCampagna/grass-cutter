@@ -85,7 +85,7 @@ class ObstacleDetectionRoutine:
             print("Sequence of ultrasound activations", self.ultrasound_sequence)
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
                 self.ultrasound_sequence = []
-                print("Obstacle passed")
+                print("Obstacle passed: ", self.ultrasound_sequence)
                 return True
             return False
         else:
@@ -296,12 +296,12 @@ class RobotController:
         self.current_state = new_state
 
     def get_angle_deviation(self):
-        real_angle = 0 if (x:=self.sensor_data["angle"]) in [360, 359] else x
+        real_angle = 0 if (x:=self.sensor_data["angle"]) in [360] else x
         return abs(real_angle - self.target_angle)
 
     def axis_turn(self):
         deviation = self.get_angle_deviation()
-        real_angle = 0 if (x:=self.sensor_data["angle"]) in [360, 359] else x
+        real_angle = 0 if (x:=self.sensor_data["angle"]) in [360] else x
         if deviation > self.angle_error_margin:
             # offset = round(self.TURNING_SPEED * 0.15)
             angular_difference = (self.target_angle - real_angle + 360) % 360
@@ -340,17 +340,24 @@ class RobotController:
         deviation = self.get_angle_deviation()
         real_angle = 0 if (x:=self.sensor_data["angle"]) in [360, 359] else x
         if deviation > self.angle_error_margin:
+            angular_difference = (self.target_angle - real_angle + 360) % 360
+            if angular_difference < 180:
+                print("Turning Right")
+                self.send_speed(self.TURNING_SPEED, int(self.TURNING_SPEED * 0.4))
+            else:
+                print("Turning Left")
+                self.send_speed(int(self.TURNING_SPEED * 0.4), self.TURNING_SPEED)
             # self.adjusting_angle = True
-            if real_angle > self.target_angle:
-                if self.target_angle == 0 and real_angle > 180:
-                    print("Target is 0 and angle is over 180 turning right, angle:", real_angle)
-                    self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.4))
-                else:
-                    print("Turning left, angle:", real_angle)
-                    self.send_speed(int(self.LEFT_CRUISE_SPEED * 0.4), self.RIGHT_CRUISE_SPEED)
-            elif real_angle < self.target_angle:
-                print("Turning right, angle:", real_angle)
-                self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.4))
+            # if real_angle > self.target_angle:
+            #     if self.target_angle == 0 and real_angle > 180:
+            #         print("Target is 0 and angle is over 180 turning right, angle:", real_angle)
+            #         self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.4))
+            #     else:
+            #         print("Turning left, angle:", real_angle)
+            #         self.send_speed(int(self.LEFT_CRUISE_SPEED * 0.4), self.RIGHT_CRUISE_SPEED)
+            # elif real_angle < self.target_angle:
+            #     print("Turning right, angle:", real_angle)
+            #     self.send_speed(self.LEFT_CRUISE_SPEED, int(self.RIGHT_CRUISE_SPEED * 0.4))
         else:
             # self.adjusting_angle = False
             self.send_speed(self.LEFT_CRUISE_SPEED, self.RIGHT_CRUISE_SPEED)
