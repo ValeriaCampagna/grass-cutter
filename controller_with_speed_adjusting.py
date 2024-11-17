@@ -547,16 +547,20 @@ def homing_state(controller: RobotController):
             controller.homing = False
             controller.change_state(turn_state)
 
-
+remnant_added = False
 def cruise_state(controller: RobotController):
+    global remnant_added
     logging.info(f"distance: {controller.get_tracked_distance()}")
     controller.cutting = True
     turns_left = controller.required_turns - controller.number_of_turns
     # If we reach the intended distance change to turn state
     objective_distance = controller.CUTTER_DIAMETER if controller.still_turning else controller.workspace_height
-    if turns_left == 1 and controller.still_turning:
+    if turns_left == 1 and controller.still_turning and not remnant_added:
         objective_distance += controller.remnant_width
+        remnant_added = True
+
     if (distance := controller.get_tracked_distance()) >= objective_distance:
+        remnant_added = False
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
         # It means that we have covered the area
         if turns_left <= 0:
