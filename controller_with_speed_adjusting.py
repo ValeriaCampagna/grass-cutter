@@ -94,7 +94,7 @@ class ObstacleDetectionRoutine:
 
     def _stage_1(self, controller: 'RobotController'):
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
-        new_target = controller.target_angle + 90 if not self.last_lane else -90
+        new_target = controller.target_angle + (90 if (not self.last_lane) and controller.target_angle == 0 else -90)
         if new_target < 0:
             new_target = 270
         controller.target_angle = new_target
@@ -105,7 +105,10 @@ class ObstacleDetectionRoutine:
         ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
-            controller.target_angle -= 90 if not self.last_lane else -90
+            controller.target_angle += -90 if (not self.last_lane) and controller.target_angle == 270 else 90
+            if controller.target_angle >= 360:
+                controller.target_angle = 0
+
             controller.required_turns = max(0, controller.required_turns - 1)
             self.turning = True
             self.done = True
