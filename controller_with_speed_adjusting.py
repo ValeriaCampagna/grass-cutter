@@ -84,8 +84,10 @@ class ObstacleDetectionRoutine:
                 self.ultrasound_sequence.append(ultra_sound_value)
             print("Sequence of ultrasound activations", self.ultrasound_sequence)
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
-                self.ultrasound_sequence = []
                 print("Obstacle passed: ", self.ultrasound_sequence)
+                if tracked_distance >= 40:
+                    print("Limit distance exceded, moving forward")
+                self.ultrasound_sequence = []
                 return True
             return False
         else:
