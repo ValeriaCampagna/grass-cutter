@@ -83,7 +83,7 @@ class ObstacleDetectionRoutine:
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
             print("Sequence of ultrasound activations", self.ultrasound_sequence)
-            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
+            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 50:
                 print("Obstacle passed: ", self.ultrasound_sequence)
                 if tracked_distance >= 40:
                     print("Limit distance exceded, moving forward")
@@ -139,9 +139,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 22#1
-        self.LEFT_CRUISE_SPEED = 20#10
-        self.RIGHT_CRUISE_SPEED = 20#10
+        self.TURNING_SPEED = 24#1
+        self.LEFT_CRUISE_SPEED = 22#10
+        self.RIGHT_CRUISE_SPEED = 22#10
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
