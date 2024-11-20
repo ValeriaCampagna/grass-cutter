@@ -137,9 +137,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 30#1
-        self.LEFT_CRUISE_SPEED = 26#10
-        self.RIGHT_CRUISE_SPEED = 26#10
+        self.TURNING_SPEED = 22#1
+        self.LEFT_CRUISE_SPEED = 20#10
+        self.RIGHT_CRUISE_SPEED = 20#10
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
