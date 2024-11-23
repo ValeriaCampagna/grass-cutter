@@ -137,9 +137,9 @@ class ObstacleDetectionRoutine:
 
 class RobotController:
     def __init__(self):
-        self.TURNING_SPEED = 11#30
-        self.LEFT_CRUISE_SPEED = 10#26
-        self.RIGHT_CRUISE_SPEED = 10#26
+        self.TURNING_SPEED = 13#30
+        self.LEFT_CRUISE_SPEED = 12#26
+        self.RIGHT_CRUISE_SPEED = 12#26
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
@@ -385,7 +385,7 @@ class RobotController:
         self.motor_ser.write(command.encode())
 
     def read_angle_data(self):
-        self.angle_ser.flushInput()
+        self.angle_ser.reset_input_buffer()
         angle_data = self.angle_ser.readline().decode('utf-8').strip()
         angle_data_list = angle_data.split(",")
         if len(angle_data_list) != 3:
@@ -402,7 +402,7 @@ class RobotController:
 
     def read_ultrasound_data(self):
         while not self.stop_event.is_set():
-            self.sonic_ser.flushInput()
+            self.sonic_ser.reset_input_buffer()
             ultrasound_data = self.sonic_ser.readline().decode("utf-8").strip()
             ultrasound_data_list = ultrasound_data.split(",")
             if len(ultrasound_data_list) != 4:
