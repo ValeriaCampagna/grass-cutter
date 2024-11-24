@@ -80,13 +80,14 @@ class ObstacleDetectionRoutine:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (
                 controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
+                logging.info("Update the speeds when passing obstacle:", (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED))
                 speed_reduction_factor = 0.2
-                controller.TURNING_SPEED = controller.TURNING_SPEED - (
-                            speed_reduction_factor * controller.TURNING_SPEED)
-                controller.LEFT_CRUISE_SPEED = controller.LEFT_CRUISE_SPEED - (
-                            speed_reduction_factor * controller.LEFT_CRUISE_SPEED)
-                controller.RIGHT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED - (
-                            speed_reduction_factor * controller.RIGHT_CRUISE_SPEED)
+                controller.TURNING_SPEED = int(controller.TURNING_SPEED - (
+                            speed_reduction_factor * controller.TURNING_SPEED))
+                controller.LEFT_CRUISE_SPEED = int(controller.LEFT_CRUISE_SPEED - (
+                            speed_reduction_factor * controller.LEFT_CRUISE_SPEED))
+                controller.RIGHT_CRUISE_SPEED = int(controller.RIGHT_CRUISE_SPEED - (
+                            speed_reduction_factor * controller.RIGHT_CRUISE_SPEED))
 
     def _ticks_to_distance(self, ticks: int):
         return self.controller.distance_per_tick * ticks
@@ -97,8 +98,8 @@ class ObstacleDetectionRoutine:
                 self.ultrasound_sequence.append(ultra_sound_value)
             print("Sequence of ultrasound activations", self.ultrasound_sequence)
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
-                self.ultrasound_sequence = []
                 print("Obstacle passed: ", self.ultrasound_sequence)
+                self.ultrasound_sequence = []
                 return True
             return False
         else:
@@ -677,8 +678,7 @@ def adjust_state(controller: RobotController):
         boost_speed = int(cached_turning_speed + (cached_turning_speed * 0.2))
         cache = (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
         controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED = boost_speed
-        print("Extra boost!")
-        logging.info("Extra boost!")
+        print("Extra boost!"); logging.info("Extra boost!")
         controller.reset_encoders()
         tracked_distance = controller.get_tracked_distance()
         while (controller.get_tracked_distance() - tracked_distance) < controller.boost_distance:
