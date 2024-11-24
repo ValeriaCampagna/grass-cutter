@@ -148,7 +148,7 @@ class RobotController:
         self.cutting = 0
 
         self.sonic_ser = serial.Serial('/dev/arduinoUltrasound', 115200, timeout=1)
-        time.sleep(5)
+        time.sleep(3)
         self.angle_ser = serial.Serial('/dev/arduinoSensors', 115200, timeout=1)
         # time.sleep(2)
         self.motor_ser = serial.Serial('/dev/arduinoMotors', 115200, timeout=1)
