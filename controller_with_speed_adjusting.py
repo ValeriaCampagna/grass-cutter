@@ -583,7 +583,8 @@ def cruise_state(controller: RobotController):
 
     if controller.boost_performed:
         print("Reducing boost distance:", objective_distance, end=" -> ")
-        objective_distance = max(0, objective_distance - controller.boosted_tracked_distance)
+        extra_bias = 10
+        objective_distance = max(0, objective_distance - controller.boosted_tracked_distance - extra_bias)
         controller.boost_performed = False
         controller.boosted_tracked_distance = 0
         print(objective_distance)
