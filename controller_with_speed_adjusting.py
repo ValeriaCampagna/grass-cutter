@@ -657,7 +657,7 @@ def adjust_state(controller: RobotController):
         print("Extra boost!")
         logging.info("Extra boost!")
         controller.send_speed(boost_speed, boost_speed)
-        time.sleep(1)
+        time.sleep(2)
         controller.send_speed(0, 0)
         print("Boost Done.")
         correct_readings_count = 5
