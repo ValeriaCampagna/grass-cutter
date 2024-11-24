@@ -50,7 +50,6 @@ class ObstacleDetectionRoutine:
             self.controller.cutting = False
 
         if self.turning:
-            print("Axis turn")
             self._axis_turn(controller)
         elif self.adjusting:
             self._adjusting(controller)
@@ -64,6 +63,8 @@ class ObstacleDetectionRoutine:
             self.current_stage(controller)
 
     def _axis_turn(self, controller: 'RobotController'):
+        if self.controller.cutting:
+            self.controller.cutting = False
         deviation = controller.axis_turn()
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
@@ -74,6 +75,17 @@ class ObstacleDetectionRoutine:
         result = bool(adjust_state(controller))
         if result:
             self.adjusting = False
+            if self.current_stage.__name__ == "_stage_2":
+                # Reduce speed for stage to
+                self.speed_cache_l_r_t = (
+                controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
+                speed_reduction_factor = 0.4
+                controller.TURNING_SPEED = controller.TURNING_SPEED - (
+                            speed_reduction_factor * controller.TURNING_SPEED)
+                controller.LEFT_CRUISE_SPEED = controller.LEFT_CRUISE_SPEED - (
+                            speed_reduction_factor * controller.LEFT_CRUISE_SPEED)
+                controller.RIGHT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED - (
+                            speed_reduction_factor * controller.RIGHT_CRUISE_SPEED)
 
     def _ticks_to_distance(self, ticks: int):
         return self.controller.distance_per_tick * ticks
@@ -94,21 +106,19 @@ class ObstacleDetectionRoutine:
 
     def _stage_1(self, controller: 'RobotController'):
         self.ticks_before_avoiding_obstacle = controller.sensor_data["left_encoder_raw"]
-        new_target = controller.target_angle + (90 if controller.target_angle == 0 else -90) #(90 if (not self.last_lane) and controller.target_angle == 0 else -90)
-        # if new_target < 0:
-        #     new_target = 270
+        new_target = controller.target_angle + (90 if controller.target_angle == 0 else -90)
         controller.target_angle = new_target
         self.current_stage = self._stage_2
         self.turning = True
 
     def _stage_2(self, controller: 'RobotController'):
+        if not controller.cutting:
+            controller.cutting = True
         ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
-            # self.ticks_after_clearing_obstacle = controller.sensor_data["left_encoder"]
             controller.target_angle += -90 if controller.turn_right_next else 90 #if self.last_lane and controller.target_angle == 270 else -90
-            # if controller.target_angle == 360:
-            #     controller.target_angle = 0
             controller.required_turns = max(0, controller.required_turns - 1)
+            controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = self.speed_cache_l_r
             self.turning = True
             self.done = True
         else:
