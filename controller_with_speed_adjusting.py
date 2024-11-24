@@ -76,7 +76,7 @@ class ObstacleDetectionRoutine:
         result = bool(adjust_state(controller))
         if result:
             self.adjusting = False
-            if self.current_stage.__name__ == "_stage_2":
+            if self.current_stage.__name__ == "_stage_2" and not self.done:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (
                 controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
