@@ -203,7 +203,11 @@ class RobotController:
 
     def update(self):
         self.read_angle_data()
-        self.current_state(self)
+        try:
+            self.current_state(self)
+        except Exception as e:
+            print(f"Error in state function {e}. Stopping")
+            self.halt()
         # self.adjust_right_wheel_speed()
         self._controller_input()
 
