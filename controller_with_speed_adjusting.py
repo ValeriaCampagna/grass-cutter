@@ -164,6 +164,8 @@ class RobotController:
         self.adjusting_angle = False
         self.turning = False
         self.still_turning = False
+        self.boost_performed = False
+        self.boost_distance = 10 # in cm
 
         self.distance_per_tick = 0.70
         self.turn_right_next = True
@@ -565,6 +567,10 @@ def cruise_state(controller: RobotController):
         objective_distance += controller.remnant_width
         remnant_added = True
 
+    if controller.boost_performed:
+        controller.boost_performed = False
+        objective_distance = max(0, objective_distance - controller.boost_distance)
+
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         remnant_added = False
         # Width/wheel_radius tells us how many turns we need to do to cover the area. If we have done that many turns
@@ -654,12 +660,13 @@ def adjust_state(controller: RobotController):
     if num_retries > max_num_retries:
         print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed, just go forward.")
         # Knucklehead implementation, just for testing
-        boost_speed = int(cached_turning_speed + (cached_turning_speed * 0.4))
+        controller.boost_performed = True
+        boost_speed = int(cached_turning_speed + (cached_turning_speed * 0.2))
         print("Extra boost!")
         logging.info("Extra boost!")
         controller.reset_encoders()
         tracked_distance = controller.get_tracked_distance()
-        while (controller.get_tracked_distance() - tracked_distance) < 10:
+        while (controller.get_tracked_distance() - tracked_distance) < controller.boost_distance:
             controller.read_angle_data()
             print("distance:", controller.get_tracked_distance() - tracked_distance)
             print("Speed sent:", boost_speed)
