@@ -80,7 +80,7 @@ class ObstacleDetectionRoutine:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (
                 controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
-                logging.info("Update the speeds when passing obstacle:", (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED))
+                logging.info("Update the speeds when passing obstacle:", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED)
                 speed_reduction_factor = 0.2
                 controller.TURNING_SPEED = int(controller.TURNING_SPEED - (
                             speed_reduction_factor * controller.TURNING_SPEED))
@@ -689,7 +689,7 @@ def adjust_state(controller: RobotController):
             print("Speed sent:", boost_speed)
             controller.forward()
         controller.send_speed(0, 0)
-        controller.boosted_tracked_distance = int(controller.get_tracked_distance() - tracked_distance)
+        controller.boosted_tracked_distance = round(controller.get_tracked_distance() - tracked_distance)
         controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = cache
         print("Boost Done.")
         correct_readings_count = 5
