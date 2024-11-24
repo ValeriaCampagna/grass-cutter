@@ -181,6 +181,7 @@ class RobotController:
         self.homing_turns = 0
         self.homing = False
         self.mapping = False
+        self.mapping_done = False
 
         # Check the ultra sounds in separate thread
         self.stop_event = threading.Event()
@@ -544,6 +545,7 @@ def homing_state(controller: RobotController):
             controller.homing_turns += 1
             controller.reset_encoders()
             controller.homing = False
+            controller.mapping_done = True
             controller.change_state(turn_state)
 
 remnant_added = False
@@ -603,6 +605,10 @@ def turn_state(controller: RobotController):
         controller.reset_encoders()
         controller.TURNING_SPEED = controller.cached_turning_speed
         controller.cached_turning_speed = 0
+        if controller.mapping_done:
+            print("Mapping is Done!")
+            logging.info("Mapping is Done!")
+            controller.change_state(end_state)
         controller.change_state(adjust_state)
 
 
@@ -642,6 +648,14 @@ def adjust_state(controller: RobotController):
 
     if num_retries > max_num_retries:
         print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed, just go forward")
+        # Knuckle head implementation, just for testing
+        boost_speed = controller.TURNING_SPEED + (controller.TURNING_SPEED * 0.4)
+        print("Extra boost!")
+        logging.info("Extra boost!")
+        controller.send_speed(boost_speed, boost_speed)
+        time.sleep(1)
+        controller.send_speed(0, 0)
+        print("Boost Done.")
         correct_readings_count = 5
 
     # TODO: This isn't a great way of knowing we have stopped, but it might be good enough
