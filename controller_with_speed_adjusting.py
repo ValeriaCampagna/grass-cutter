@@ -658,10 +658,11 @@ def adjust_state(controller: RobotController):
         print("Extra boost!")
         logging.info("Extra boost!")
         controller.reset_encoders()
-        s_time = time.time()
-        while (time.time() - s_time) < 2:
+        tracked_distance = controller.get_tracked_distance()
+        while (controller.get_tracked_distance() - tracked_distance) < 10:
             print("Speed sent:", boost_speed)
             controller.send_speed(boost_speed, boost_speed)
+        controller.send_speed(0, 0)
         print("Boost Done.")
         correct_readings_count = 5
 
