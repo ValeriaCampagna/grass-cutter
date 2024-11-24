@@ -647,7 +647,7 @@ cached_turning_speed = 0
 last_check = 0
 min_turning_speed = 0
 num_retries = 1
-max_num_retries = 2
+max_num_retries = 3
 def adjust_state(controller: RobotController):
     global cache_angle_error_margin, correct_readings_count, \
         cached_turning_speed, last_check, min_turning_speed, num_retries
