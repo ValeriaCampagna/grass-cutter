@@ -178,6 +178,7 @@ class RobotController:
         self.still_turning = False
         self.boost_performed = False
         self.boost_distance = 10 # in cm
+        self.boosted_tracked_distance = 0
 
         self.distance_per_tick = 0.70
         self.turn_right_next = True
@@ -581,8 +582,9 @@ def cruise_state(controller: RobotController):
 
     if controller.boost_performed:
         print("Reducing boost distance:", objective_distance, end=" -> ")
+        objective_distance = max(0, objective_distance - controller.boosted_tracked_distance)
         controller.boost_performed = False
-        objective_distance = max(0, objective_distance - controller.boost_distance)
+        controller.boosted_tracked_distance = 0
         print(objective_distance)
 
     if (distance := controller.get_tracked_distance()) >= objective_distance:
@@ -681,12 +683,13 @@ def adjust_state(controller: RobotController):
         print("Extra boost!"); logging.info("Extra boost!")
         controller.reset_encoders()
         tracked_distance = controller.get_tracked_distance()
-        while (controller.get_tracked_distance() - tracked_distance) < controller.boost_distance:
+        while int(controller.get_tracked_distance() - tracked_distance) < controller.boost_distance:
             controller.read_angle_data()
             print("distance:", controller.get_tracked_distance() - tracked_distance)
             print("Speed sent:", boost_speed)
             controller.forward()
         controller.send_speed(0, 0)
+        controller.boosted_tracked_distance = int(controller.get_tracked_distance() - tracked_distance)
         controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = cache
         print("Boost Done.")
         correct_readings_count = 5
