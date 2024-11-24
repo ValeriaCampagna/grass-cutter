@@ -202,8 +202,8 @@ class RobotController:
         self.last_update_time = time.time()
 
     def update(self):
-        self.read_angle_data()
         try:
+            self.read_angle_data()
             self.current_state(self)
         except Exception as e:
             print(f"Error in state function {e}. Stopping")
