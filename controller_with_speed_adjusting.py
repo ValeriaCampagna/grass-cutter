@@ -99,6 +99,8 @@ class ObstacleDetectionRoutine:
             print("Sequence of ultrasound activations", self.ultrasound_sequence)
             if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
                 print("Obstacle passed: ", self.ultrasound_sequence)
+                if tracked_distance >= 40:
+                    print("Exceeded limit distance!"); logging.info("Exceeded limit distance!")
                 self.ultrasound_sequence = []
                 return True
             return False
@@ -116,7 +118,7 @@ class ObstacleDetectionRoutine:
     def _stage_2(self, controller: 'RobotController'):
         if not controller.cutting:
             controller.cutting = True
-        ultrasound = controller.sensor_data["left_ultrasound"] if not self.last_lane else controller.sensor_data["right_ultrasound"]
+        ultrasound = controller.sensor_data["left_ultrasound"] if controller.target_angle == 90 else controller.sensor_data["right_ultrasound"]
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             controller.target_angle += -90 if controller.turn_right_next else 90 #if self.last_lane and controller.target_angle == 270 else -90
             controller.required_turns = max(0, controller.required_turns - 1)
