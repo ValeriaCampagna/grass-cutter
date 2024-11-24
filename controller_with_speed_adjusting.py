@@ -385,6 +385,7 @@ class RobotController:
 
         cutter = 0 #int(self.cutting)
         # right wheel, left_wheel
+        self.motor_ser.reset_output_buffer()
         command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
         logging.info(f"Speed Message: {command}",)
         self.motor_ser.write(command.encode())
