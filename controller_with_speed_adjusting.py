@@ -78,9 +78,8 @@ class ObstacleDetectionRoutine:
             self.adjusting = False
             if self.current_stage.__name__ == "_stage_2" and not self.done:
                 # Reduce speed for stage to
-                self.speed_cache_l_r_t = (
-                controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
-                logging.info("Update the speeds when passing obstacle:", controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED)
+                self.speed_cache_l_r_t = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
+                logging.info(f"Update the speeds when passing obstacle: {controller.TURNING_SPEED}, {controller.LEFT_CRUISE_SPEED}")
                 speed_reduction_factor = 0.2
                 controller.TURNING_SPEED = int(controller.TURNING_SPEED - (
                             speed_reduction_factor * controller.TURNING_SPEED))
