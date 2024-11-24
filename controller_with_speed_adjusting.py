@@ -652,14 +652,15 @@ def adjust_state(controller: RobotController):
         correct_readings_count = 0
 
     if num_retries > max_num_retries:
-        print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed, just go forward")
+        print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed, just go forward.")
         # Knucklehead implementation, just for testing
         boost_speed = cached_turning_speed + (cached_turning_speed * 0.4)
         print("Extra boost!")
         logging.info("Extra boost!")
-        controller.send_speed(boost_speed, boost_speed)
-        time.sleep(2)
-        controller.send_speed(0, 0)
+        s_time = time.time()
+        while (time.time() - s_time) < 2:
+            print("Speed sent, ", boost_speed)
+            controller.send_speed(boost_speed, boost_speed)
         print("Boost Done.")
         correct_readings_count = 5
 
