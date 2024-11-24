@@ -568,8 +568,10 @@ def cruise_state(controller: RobotController):
         remnant_added = True
 
     if controller.boost_performed:
+        print("Reducing boost distance:", objective_distance, end=" -> ")
         controller.boost_performed = False
         objective_distance = max(0, objective_distance - controller.boost_distance)
+        print(objective_distance)
 
     if (distance := controller.get_tracked_distance()) >= objective_distance:
         remnant_added = False
@@ -662,6 +664,8 @@ def adjust_state(controller: RobotController):
         # Knucklehead implementation, just for testing
         controller.boost_performed = True
         boost_speed = int(cached_turning_speed + (cached_turning_speed * 0.2))
+        cache = (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+        controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED = boost_speed
         print("Extra boost!")
         logging.info("Extra boost!")
         controller.reset_encoders()
@@ -670,8 +674,9 @@ def adjust_state(controller: RobotController):
             controller.read_angle_data()
             print("distance:", controller.get_tracked_distance() - tracked_distance)
             print("Speed sent:", boost_speed)
-            controller.send_speed(boost_speed, boost_speed)
+            controller.forward()
         controller.send_speed(0, 0)
+        controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = cache
         print("Boost Done.")
         correct_readings_count = 5
 
