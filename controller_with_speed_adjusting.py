@@ -679,8 +679,8 @@ def adjust_state(controller: RobotController):
         # Knucklehead implementation, just for testing
         controller.boost_performed = True
         boost_speed = int(cached_turning_speed + (cached_turning_speed * 0.2))
-        cache = (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
-        controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED = boost_speed
+        # cache = (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
+        # controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED = boost_speed
         print("Extra boost!"); logging.info("Extra boost!")
         controller.reset_encoders()
         tracked_distance = controller.get_tracked_distance()
@@ -688,10 +688,10 @@ def adjust_state(controller: RobotController):
             controller.read_angle_data()
             print("distance:", controller.get_tracked_distance() - tracked_distance)
             print("Speed sent:", boost_speed)
-            controller.forward()
+            controller.send_speed(boost_speed, boost_speed)
         controller.send_speed(0, 0)
         controller.boosted_tracked_distance = round(controller.get_tracked_distance() - tracked_distance)
-        controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = cache
+        # controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = cache
         print("Boost Done.")
         correct_readings_count = 5
 
