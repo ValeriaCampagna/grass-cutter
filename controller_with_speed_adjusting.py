@@ -623,7 +623,7 @@ cached_turning_speed = 0
 last_check = 0
 min_turning_speed = 0
 num_retries = 1
-max_num_retries = 6
+max_num_retries = 4
 def adjust_state(controller: RobotController):
     global cache_angle_error_margin, correct_readings_count, \
         cached_turning_speed, last_check, min_turning_speed, num_retries
@@ -654,12 +654,13 @@ def adjust_state(controller: RobotController):
     if num_retries > max_num_retries:
         print(f"ERROR: {max_num_retries} retries of the adjustment protocol already executed, just go forward.")
         # Knucklehead implementation, just for testing
-        boost_speed = cached_turning_speed + (cached_turning_speed * 0.4)
+        boost_speed = int(cached_turning_speed + (cached_turning_speed * 0.4))
         print("Extra boost!")
         logging.info("Extra boost!")
+        controller.reset_encoders()
         s_time = time.time()
         while (time.time() - s_time) < 2:
-            print("Speed sent, ", boost_speed)
+            print("Speed sent:", boost_speed)
             controller.send_speed(boost_speed, boost_speed)
         print("Boost Done.")
         correct_readings_count = 5
