@@ -42,6 +42,7 @@ class ObstacleDetectionRoutine:
         self.ticks_after_clearing_obstacle = 0
         self.ticks_obstacle_length = 0
         self.ultrasound_sequence = []
+        self.speed_cache_l_r_t = None
         self.done = False
 
     def __call__(self, controller: 'RobotController'):
@@ -79,7 +80,7 @@ class ObstacleDetectionRoutine:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (
                 controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
-                speed_reduction_factor = 0.4
+                speed_reduction_factor = 0.3
                 controller.TURNING_SPEED = controller.TURNING_SPEED - (
                             speed_reduction_factor * controller.TURNING_SPEED)
                 controller.LEFT_CRUISE_SPEED = controller.LEFT_CRUISE_SPEED - (
@@ -118,7 +119,7 @@ class ObstacleDetectionRoutine:
         if self._obstacle_passed(ultrasound, controller.get_tracked_distance()):
             controller.target_angle += -90 if controller.turn_right_next else 90 #if self.last_lane and controller.target_angle == 270 else -90
             controller.required_turns = max(0, controller.required_turns - 1)
-            controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED = self.speed_cache_l_r
+            controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED = self.speed_cache_l_r_t
             self.turning = True
             self.done = True
         else:
