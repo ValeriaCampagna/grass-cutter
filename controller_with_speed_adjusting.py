@@ -498,6 +498,7 @@ def map_state(controller: RobotController):
                 controller.workspace_height = controller.get_tracked_distance()
                 controller.reset_encoders()
                 controller.change_state(turn_state)
+                print("Mapping height Done. Turning Right")
 
             # Finish the mapping and save the dimensions. (0, -1) is d-pad bellow button
             if button == (0, -1):
