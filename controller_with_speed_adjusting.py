@@ -641,6 +641,7 @@ def turn_state(controller: RobotController):
             print("Mapping is Done!")
             logging.info("Mapping is Done!")
             controller.change_state(end_state)
+            return
         controller.change_state(adjust_state)
 
 
