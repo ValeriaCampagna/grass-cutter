@@ -567,6 +567,8 @@ def homing_state(controller: RobotController):
             controller.homing_turns += 1
             controller.reset_encoders()
             controller.homing = False
+            print("Mapping done is set.")
+            logging.info("Mapping done is set.")
             controller.mapping_done = True
             controller.change_state(turn_state)
 
