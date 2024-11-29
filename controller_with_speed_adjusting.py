@@ -156,7 +156,7 @@ class RobotController:
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
-        self.CUTTER_DIAMETER = 40
+        self.CUTTER_DIAMETER = 30
         self.ROBOT_LENGHT = 54
         self.cutting = 0
 
