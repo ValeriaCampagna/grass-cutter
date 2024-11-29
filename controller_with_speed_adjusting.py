@@ -300,7 +300,7 @@ class RobotController:
                 elif button == (0, -1):
                     self.send_speed(-self.LEFT_CRUISE_SPEED, -self.RIGHT_CRUISE_SPEED)
                 elif button == 12:
-                    self.cutting = int(self.cutting)
+                    self.cutting = not self.cutting
                     self.send_speed(0, 0)
                 else:
                     self.send_speed(0, 0)
@@ -399,7 +399,7 @@ class RobotController:
             l_dir = 0
             l_stop = 1 if left_speed == 0 else 0
 
-        cutter = 0 #int(self.cutting)
+        cutter = int(self.cutting)
         # right wheel, left_wheel
         self.motor_ser.reset_output_buffer()
         command = f"{r_speed},{r_dir},{r_stop},{l_speed},{l_dir},{l_stop},{cutter}\n"
