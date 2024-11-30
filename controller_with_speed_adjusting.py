@@ -616,7 +616,7 @@ def cruise_state(controller: RobotController):
             return
         controller.reset_encoders()
         controller.cache_obstacle_turning_temp = controller.TURNING_SPEED
-        controller.TURNING_SPEED = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.4)
+        controller.TURNING_SPEED = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.3)
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
         controller.forward()
