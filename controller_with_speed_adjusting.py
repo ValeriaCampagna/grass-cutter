@@ -44,6 +44,7 @@ class ObstacleDetectionRoutine:
         self.ultrasound_sequence = []
         self.speed_cache_l_r_t = None
         self.done = False
+        self.ultrasound_output_avg = []
 
     def __call__(self, controller: 'RobotController'):
         if self.controller is None:
