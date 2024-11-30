@@ -156,7 +156,7 @@ class RobotController:
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
-        self.CUTTER_DIAMETER = 30
+        self.CUTTER_DIAMETER = 35
         self.ROBOT_LENGHT = 54
         self.cutting = 0
 
@@ -532,7 +532,7 @@ def map_state(controller: RobotController):
             if not (controller.workspace_width == controller.workspace_height == 0):
                 controller.remnant_width = round(controller.workspace_width % controller.CUTTER_DIAMETER)
                 # Subtract 1 to account for the line in which we started
-                controller.required_turns = (controller.workspace_width // controller.CUTTER_DIAMETER)
+                controller.required_turns = (controller.workspace_width // controller.CUTTER_DIAMETER) - 1
                 if controller.remnant_width >= controller.CUTTER_DIAMETER * 0.5:
                     controller.required_turns += 1
                 controller.change_state(cruise_state)
