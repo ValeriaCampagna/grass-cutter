@@ -663,7 +663,7 @@ def adjust_state(controller: RobotController):
         last_check = time.time()
         controller.angle_error_margin = 1
         min_turning_speed = round(cached_turning_speed * 0.4)
-        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.85)
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.70)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
@@ -673,7 +673,7 @@ def adjust_state(controller: RobotController):
     if deviation <= controller.angle_error_margin:
         correct_readings_count += 1
     else:
-        if (time.time() - last_check) >= 4:
+        if (time.time() - last_check) >= 4.5:
             last_check = time.time()
             controller.TURNING_SPEED = max(min_turning_speed, controller.TURNING_SPEED - int(cached_turning_speed * 0.10))
             print("Current turning speed: ", controller.TURNING_SPEED)
