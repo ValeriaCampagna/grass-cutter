@@ -70,6 +70,9 @@ class ObstacleDetectionRoutine:
         if deviation <= controller.angle_error_margin:
             controller.reset_encoders()
             self.turning = False
+            if controller.cache_obstacle_turning_temp is not None:
+                controller.TURNING_SPEED = controller.cache_obstacle_turning_temp
+                controller.cache_obstacle_turning_temp = None
             self.adjusting = True
 
     def _adjusting(self, controller: 'RobotController'):
@@ -611,6 +614,8 @@ def cruise_state(controller: RobotController):
             controller.change_state(end_state)
             return
         controller.reset_encoders()
+        controller.cache_obstacle_turning_temp = controller.TURNING_SPEED
+        controller.TURNING_SPEED = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.4)
         controller.change_state(ObstacleDetectionRoutine(controller.target_angle, turns_left))
     else:
         controller.forward()
