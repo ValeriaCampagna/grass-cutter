@@ -670,7 +670,7 @@ def adjust_state(controller: RobotController):
     m = f"target: {controller.target_angle} | current: {real_angle}"
     print(m)
     logging.info(m)
-    if deviation == controller.angle_error_margin:
+    if deviation <= controller.angle_error_margin:
         correct_readings_count += 1
     else:
         if (time.time() - last_check) >= 4:
