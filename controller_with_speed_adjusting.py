@@ -651,7 +651,7 @@ cached_turning_speed = 0
 last_check = 0
 min_turning_speed = 0
 num_retries = 1
-max_num_retries = 4
+max_num_retries = 3
 def adjust_state(controller: RobotController):
     global cache_angle_error_margin, correct_readings_count, \
         cached_turning_speed, last_check, min_turning_speed, num_retries
@@ -661,9 +661,9 @@ def adjust_state(controller: RobotController):
         cached_turning_speed = controller.TURNING_SPEED
         # controller.TURNING_SPEED = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.1)
         last_check = time.time()
-        controller.angle_error_margin = 0
+        controller.angle_error_margin = 1
         min_turning_speed = round(cached_turning_speed * 0.4)
-        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.80)
+        controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.85)
 
     deviation = controller.axis_turn()
     real_angle = 0 if (x:=controller.sensor_data["angle"]) == 360 else x
