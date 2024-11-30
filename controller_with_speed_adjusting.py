@@ -687,6 +687,7 @@ def adjust_state(controller: RobotController):
         # cache = (controller.TURNING_SPEED, controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED)
         # controller.TURNING_SPEED = controller.LEFT_CRUISE_SPEED = controller.RIGHT_CRUISE_SPEED = boost_speed
         print("Extra boost!"); logging.info("Extra boost!")
+        time.sleep(1)
         controller.reset_encoders()
         tracked_distance = controller.get_tracked_distance()
         while int(controller.get_tracked_distance() - tracked_distance) < controller.boost_distance:
