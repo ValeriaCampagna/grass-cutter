@@ -172,7 +172,7 @@ class RobotController:
         self.sensor_data: dict = {"front_ultrasound_1": 0, "front_ultrasound_2": 0,
                                   "right_ultrasound": 0, "left_ultrasound": 0}
         self.target_angle = 0
-        self.angle_error_margin = 2
+        self.angle_error_margin = 1
         self.cached_turning_speed = 0
         self.adjusting_angle = False
         self.turning = False
