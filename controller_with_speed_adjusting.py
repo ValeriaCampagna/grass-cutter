@@ -84,7 +84,7 @@ class ObstacleDetectionRoutine:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
                 logging.info(f"Update the speeds when passing obstacle: {controller.TURNING_SPEED}, {controller.LEFT_CRUISE_SPEED}")
-                speed_reduction_factor = 0.4
+                speed_reduction_factor = 0.2
                 controller.TURNING_SPEED = int(controller.TURNING_SPEED - (
                             speed_reduction_factor * controller.TURNING_SPEED))
                 controller.LEFT_CRUISE_SPEED = int(controller.LEFT_CRUISE_SPEED - (
@@ -155,8 +155,8 @@ class ObstacleDetectionRoutine:
 class RobotController:
     def __init__(self):
         self.TURNING_SPEED = 28#30
-        self.LEFT_CRUISE_SPEED = 25#26
-        self.RIGHT_CRUISE_SPEED = 25#26
+        self.LEFT_CRUISE_SPEED = 26#26
+        self.RIGHT_CRUISE_SPEED = 26#26
 
         # In Centimeters
         self.WHEEL_RADIUS = 44
