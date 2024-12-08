@@ -84,7 +84,7 @@ class ObstacleDetectionRoutine:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
                 logging.info(f"Update the speeds when passing obstacle: {controller.TURNING_SPEED}, {controller.LEFT_CRUISE_SPEED}")
-                speed_reduction_factor = 0.4
+                speed_reduction_factor = 0.1
                 controller.TURNING_SPEED = int(controller.TURNING_SPEED - (
                             speed_reduction_factor * controller.TURNING_SPEED))
                 controller.LEFT_CRUISE_SPEED = int(controller.LEFT_CRUISE_SPEED - (
@@ -100,7 +100,7 @@ class ObstacleDetectionRoutine:
             if self.ultrasound_sequence[-1] != ultra_sound_value:
                 self.ultrasound_sequence.append(ultra_sound_value)
             print("Sequence of ultrasound activations", self.ultrasound_sequence)
-            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 40:
+            if self.ultrasound_sequence in [[0, 1, 0], [1, 0]] or tracked_distance >= 50:
                 print("Obstacle passed: ", self.ultrasound_sequence)
                 if tracked_distance >= 40:
                     print("Exceeded limit distance!"); logging.info("Exceeded limit distance!")
