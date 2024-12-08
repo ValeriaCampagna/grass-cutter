@@ -668,7 +668,7 @@ def adjust_state(controller: RobotController):
         # controller.TURNING_SPEED = controller.TURNING_SPEED - (controller.TURNING_SPEED * 0.1)
         last_check = time.time()
         controller.angle_error_margin = 1
-        min_turning_speed = round(cached_turning_speed * 0.5)
+        min_turning_speed = round(cached_turning_speed * 0.3)
         controller.TURNING_SPEED = int(controller.TURNING_SPEED * 0.60)
 
     deviation = controller.axis_turn()
