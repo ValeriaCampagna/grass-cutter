@@ -84,7 +84,7 @@ class ObstacleDetectionRoutine:
                 # Reduce speed for stage to
                 self.speed_cache_l_r_t = (controller.LEFT_CRUISE_SPEED, controller.RIGHT_CRUISE_SPEED, controller.TURNING_SPEED)
                 logging.info(f"Update the speeds when passing obstacle: {controller.TURNING_SPEED}, {controller.LEFT_CRUISE_SPEED}")
-                speed_reduction_factor = 0.1
+                speed_reduction_factor = 0.3
                 controller.TURNING_SPEED = int(controller.TURNING_SPEED - (
                             speed_reduction_factor * controller.TURNING_SPEED))
                 controller.LEFT_CRUISE_SPEED = int(controller.LEFT_CRUISE_SPEED - (
