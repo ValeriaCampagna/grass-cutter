@@ -637,7 +637,7 @@ def turn_state(controller: RobotController):
         ts = controller.TURNING_SPEED
         controller.cached_turning_speed = ts
         # TODO: Run tests to see if this works. It should decrease turning speed 20% when are about to reach the desired angle
-        controller.TURNING_SPEED = ts - round(ts * 0.2)
+        controller.TURNING_SPEED = ts - round(ts * 0.4)
 
     if deviation <= controller.angle_error_margin:
         controller.reset_encoders()
